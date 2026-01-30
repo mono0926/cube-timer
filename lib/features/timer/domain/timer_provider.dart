@@ -76,7 +76,9 @@ class TimerController extends _$TimerController {
   }
 
   void _start() {
-    if (state.status == TimerStatus.running) return;
+    if (state.status == TimerStatus.running) {
+      return;
+    }
 
     ref.read(soundControllerProvider.notifier).playStart();
 
@@ -94,7 +96,9 @@ class TimerController extends _$TimerController {
   }
 
   void _stop() {
-    if (state.status != TimerStatus.running) return;
+    if (state.status != TimerStatus.running) {
+      return;
+    }
 
     ref.read(soundControllerProvider.notifier).playStop();
 
@@ -119,7 +123,9 @@ class TimerController extends _$TimerController {
 
   void reset() {
     // Can only reset if stopped or idle
-    if (state.status == TimerStatus.running) return;
+    if (state.status == TimerStatus.running) {
+      return;
+    }
 
     _ticker?.cancel();
     _stopwatch?.reset();

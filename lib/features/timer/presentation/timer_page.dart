@@ -128,15 +128,15 @@ class TimerPage extends ConsumerWidget {
   Color _getPadColor(TimerStatus status) {
     switch (status) {
       case TimerStatus.idle:
-        return Colors.grey.withOpacity(0.3);
+        return Colors.grey.withValues(alpha: 0.3);
       case TimerStatus.holding:
-        return Colors.red.withOpacity(0.5);
+        return Colors.red.withValues(alpha: 0.5);
       case TimerStatus.ready:
-        return Colors.green.withOpacity(0.5);
+        return Colors.green.withValues(alpha: 0.5);
       case TimerStatus.running:
         return Colors.transparent;
       case TimerStatus.stopped:
-        return Colors.grey.withOpacity(0.3);
+        return Colors.grey.withValues(alpha: 0.3);
     }
   }
 
@@ -175,7 +175,9 @@ class TimerPage extends ConsumerWidget {
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds % 60;
     final centiseconds = (milliseconds % 1000) ~/ 10;
-    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}.${centiseconds.toString().padLeft(2, '0')}';
+    return '${minutes.toString().padLeft(2, '0')}:'
+        '${seconds.toString().padLeft(2, '0')}.'
+        '${centiseconds.toString().padLeft(2, '0')}';
   }
 }
 
@@ -193,7 +195,7 @@ class _HandPad extends StatelessWidget {
       child: Icon(
         Icons.front_hand,
         size: 60,
-        color: Colors.white.withOpacity(0.8),
+        color: Colors.white.withValues(alpha: 0.8),
       ),
     );
   }
@@ -210,17 +212,17 @@ class StackMatPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     // Draw a curved shape resembling the mat
-    final path = Path();
-    path.moveTo(0, size.height * 0.4);
-    path.quadraticBezierTo(
-      size.width * 0.5,
-      size.height * 0.25,
-      size.width,
-      size.height * 0.4,
-    );
-    path.lineTo(size.width, size.height);
-    path.lineTo(0, size.height);
-    path.close();
+    final path = Path()
+      ..moveTo(0, size.height * 0.4)
+      ..quadraticBezierTo(
+        size.width * 0.5,
+        size.height * 0.25,
+        size.width,
+        size.height * 0.4,
+      )
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
 
     canvas.drawPath(path, paint);
   }
