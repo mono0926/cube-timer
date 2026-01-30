@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/router/app_router.dart';
 import '../domain/timer_provider.dart';
 import '../domain/timer_state.dart';
+import 'rubik_particle_background.dart';
 
 class TimerPage extends ConsumerWidget {
   const TimerPage({super.key});
@@ -44,19 +45,28 @@ class TimerPage extends ConsumerWidget {
       ),
       body: Stack(
         children: [
-          // 0. Global Background (Gorgeous Fixed)
+          // 0. Global Background (Gorgeous Fixed + Rubik Particles)
           Positioned.fill(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 500),
-              decoration: BoxDecoration(
-                gradient: RadialGradient(
-                  radius: 1.5,
-                  colors: [
-                    Colors.purple.shade900,
-                    Colors.black,
-                  ],
+            child: Stack(
+              children: [
+                // Base Gradient
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment.center,
+                      radius: 1.5,
+                      colors: [
+                        Colors.purple.shade900,
+                        Colors.black,
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+                // Rubik Particles
+                const Positioned.fill(
+                  child: RubikParticleBackground(),
+                ),
+              ],
             ),
           ),
 
