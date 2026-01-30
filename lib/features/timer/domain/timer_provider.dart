@@ -1,10 +1,9 @@
-import 'dart:async';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../core/sound/sound_provider.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/utils/scramble_generator.dart';
+import '../../../core/utils/ticker_service.dart';
 import '../../history/domain/history_provider.dart';
 import 'timer_state.dart';
 
@@ -12,18 +11,19 @@ part 'timer_provider.g.dart';
 
 @riverpod
 class TimerController extends _$TimerController {
-  Stopwatch? _stopwatch;
-  Timer? _ticker;
-  Timer? _holdingTimer;
+  void Function()? _tickerCancel;
+  void Function()? _holdingCancel;
   final Set<int> _pointers = {};
   static const _holdDuration = Duration(milliseconds: 300);
+
+  ITickerService get _tickerService => ref.read(tickerServiceProvider);
 
   @override
   TimerState build() {
     // Ensure cleanup on dispose
     ref.onDispose(() {
-      _ticker?.cancel();
-      _holdingTimer?.cancel();
+      _tickerCancel?.call();
+      _holdingCancel?.call();
     });
 
     return TimerState(
@@ -62,8 +62,8 @@ class TimerController extends _$TimerController {
   }
 
   void _startHolding() {
-    _holdingTimer?.cancel();
-    _holdingTimer = Timer(_holdDuration, () {
+    _holdingCancel?.call();
+    _holdingCancel = _tickerService.startTimer(_holdDuration, () {
       if (state.status == TimerStatus.holding) {
         state = state.copyWith(status: TimerStatus.ready);
         ref.read(soundControllerProvider.notifier).playReady();
@@ -72,7 +72,7 @@ class TimerController extends _$TimerController {
   }
 
   void _cancelHolding() {
-    _holdingTimer?.cancel();
+    _holdingCancel?.call();
   }
 
   void _start() {
@@ -82,11 +82,14 @@ class TimerController extends _$TimerController {
 
     ref.read(soundControllerProvider.notifier).playStart();
 
-    _stopwatch = Stopwatch()..start();
-    _ticker = Timer.periodic(const Duration(milliseconds: 10), (_) {
-      final elapsed = _stopwatch?.elapsedMilliseconds ?? 0;
-      state = state.copyWith(elapsedMilliseconds: elapsed);
-    });
+    _tickerService.startStopwatch();
+    _tickerCancel = _tickerService.startPeriodic(
+      const Duration(milliseconds: 10),
+      () {
+        final elapsed = _tickerService.elapsedMilliseconds;
+        state = state.copyWith(elapsedMilliseconds: elapsed);
+      },
+    );
 
     state = state.copyWith(
       status: TimerStatus.running,
@@ -102,11 +105,11 @@ class TimerController extends _$TimerController {
 
     ref.read(soundControllerProvider.notifier).playStop();
 
-    _ticker?.cancel();
-    _stopwatch?.stop();
+    _tickerCancel?.call();
+    _tickerService.stopStopwatch();
 
     // Final update to ensure accuracy
-    final elapsed = _stopwatch?.elapsedMilliseconds ?? 0;
+    final elapsed = _tickerService.elapsedMilliseconds;
 
     state = state.copyWith(
       status: TimerStatus.stopped,
@@ -127,8 +130,8 @@ class TimerController extends _$TimerController {
       return;
     }
 
-    _ticker?.cancel();
-    _stopwatch?.reset();
+    _tickerCancel?.call();
+    _tickerService.resetStopwatch();
     state = state.copyWith(
       status: TimerStatus.idle,
       elapsedMilliseconds: 0,

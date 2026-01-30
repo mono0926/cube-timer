@@ -6,7 +6,7 @@ part of 'app_theme.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$lightThemeHash() => r'206917dd9900e8f6cc83c913eb4603559f9f6c8c';
+String _$lightThemeHash() => r'338e2368a080873e177674c6335003cd1aca3ba0';
 
 /// See also [lightTheme].
 @ProviderFor(lightTheme)
@@ -23,7 +23,7 @@ final lightThemeProvider = AutoDisposeProvider<ThemeData>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef LightThemeRef = AutoDisposeProviderRef<ThemeData>;
-String _$darkThemeHash() => r'534e550b6de2f1634d3b467c27e30ae1d4903eb6';
+String _$darkThemeHash() => r'f5e0940878cf303cc88b9c05af0daeb8aa448966';
 
 /// See also [darkTheme].
 @ProviderFor(darkTheme)
