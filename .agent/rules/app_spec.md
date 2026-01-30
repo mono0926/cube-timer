@@ -1,6 +1,6 @@
 ---
 description: アプリケーション仕様書リファレンス
-globs: ['doc/specs/app_spec.md']
+globs: ['doc/specs/app_spec.md', '**/*.dart', 'pubspec.yaml']
 ---
 
 # アプリケーション仕様書
