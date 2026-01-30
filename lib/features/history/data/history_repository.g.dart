@@ -1,26 +1,28 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'timer_provider.dart';
+part of 'history_repository.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$timerNotifierHash() => r'7ad007e0940149ef0806b0baa722224d2c19dfff';
+String _$historyRepositoryHash() => r'2a0d2a8b8539d5fc13dedc01f9d2ccffa7654649';
 
-/// See also [TimerNotifier].
-@ProviderFor(TimerNotifier)
-final timerNotifierProvider =
-    AutoDisposeNotifierProvider<TimerNotifier, TimerState>.internal(
-      TimerNotifier.new,
-      name: r'timerNotifierProvider',
+/// See also [historyRepository].
+@ProviderFor(historyRepository)
+final historyRepositoryProvider =
+    AutoDisposeProvider<HistoryRepository>.internal(
+      historyRepository,
+      name: r'historyRepositoryProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$timerNotifierHash,
+          : _$historyRepositoryHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$TimerNotifier = AutoDisposeNotifier<TimerState>;
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef HistoryRepositoryRef = AutoDisposeProviderRef<HistoryRepository>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

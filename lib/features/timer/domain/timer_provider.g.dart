@@ -1,26 +1,26 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'history_provider.dart';
+part of 'timer_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$historyHash() => r'3e8abb690dcdfc55c35c3c4f6457202522c73754';
+String _$timerControllerHash() => r'4c303eb056360ded47ccb74ad7cfffaadc085aa6';
 
-/// See also [History].
-@ProviderFor(History)
-final historyProvider =
-    AutoDisposeAsyncNotifierProvider<History, List<String>>.internal(
-      History.new,
-      name: r'historyProvider',
+/// See also [TimerController].
+@ProviderFor(TimerController)
+final timerControllerProvider =
+    AutoDisposeNotifierProvider<TimerController, TimerState>.internal(
+      TimerController.new,
+      name: r'timerControllerProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
-          : _$historyHash,
+          : _$timerControllerHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
 
-typedef _$History = AutoDisposeAsyncNotifier<List<String>>;
+typedef _$TimerController = AutoDisposeNotifier<TimerState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

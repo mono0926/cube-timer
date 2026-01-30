@@ -4,13 +4,13 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'sound_provider.g.dart';
 
 @Riverpod(keepAlive: true)
-class Sound extends _$Sound {
+class SoundController extends _$SoundController {
   late AudioPlayer _player;
 
   @override
   void build() {
     _player = AudioPlayer();
-    // Configure audio context if needed (default is usually fine)
+    // Preload sounds if necessary, though AssetSource usually handles it well.
     ref.onDispose(() {
       _player.dispose();
     });
@@ -18,16 +18,16 @@ class Sound extends _$Sound {
 
   Future<void> playReady() async {
     await _player.stop();
-    await _player.play(AssetSource('audio/ready.mp3'), volume: 1.0);
+    await _player.play(AssetSource('audio/ready.mp3'), volume: 1);
   }
 
   Future<void> playStart() async {
     await _player.stop();
-    await _player.play(AssetSource('audio/start.mp3'), volume: 1.0);
+    await _player.play(AssetSource('audio/start.mp3'), volume: 1);
   }
 
   Future<void> playStop() async {
     await _player.stop();
-    await _player.play(AssetSource('audio/stop.mp3'), volume: 1.0);
+    await _player.play(AssetSource('audio/stop.mp3'), volume: 1);
   }
 }
