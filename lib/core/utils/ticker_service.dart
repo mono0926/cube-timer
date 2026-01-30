@@ -69,4 +69,3 @@ class TickerService implements ITickerService {
     _stopwatch.reset();
   }
 }
-``

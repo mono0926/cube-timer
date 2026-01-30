@@ -177,5 +177,34 @@ void main() {
         expect(find.text('00:00.00'), findsOneWidget);
       },
     );
+
+    testWidgets(
+      'Layout should not overflow on small landscape screen (height 200)',
+      (tester) async {
+        // Set screen size to 800x200
+        tester.view.physicalSize = const Size(800, 200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              tickerServiceProvider.overrideWith((ref) => tickerService),
+            ],
+            child: const MaterialApp(
+              home: TimerPage(),
+            ),
+          ),
+        );
+
+        // Verify key widgets are present
+        expect(find.text('タッチしてスタート'), findsOneWidget);
+        expect(find.text('00:00.00'), findsOneWidget);
+
+        // Verify no overflow errors
+        // Flutter tests fail automatically on overflow exceptions,
+        // effectively checking this just by running successfully.
+      },
+    );
   });
 }

@@ -67,51 +67,73 @@ class TimerPage extends ConsumerWidget {
           ),
 
           // 2. UI Overlay Layer
+          // 2. UI Overlay Layer
           SafeArea(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 // Info Section (Ignored so touches pass to timer layer)
                 Expanded(
                   child: IgnorePointer(
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         const SizedBox(height: 20),
                         // Scramble
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 32),
-                          child: Text(
-                            state.scramble,
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
+                        Flexible(
+                          flex: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 32),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                state.scramble,
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
                             ),
                           ),
                         ),
 
-                        const Spacer(),
-
-                        // Status Text
-                        Text(
-                          _getStatusText(state.status),
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            color: _getStatusColor(state.status, theme),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Timer Display
-                        Hero(
-                          tag: 'timer_display',
-                          child: Text(
-                            _formatTime(state.elapsedMilliseconds),
-                            style: theme.textTheme.displayLarge?.copyWith(
-                              color: _getStatusColor(state.status, theme),
+                        // Status Text & Timer
+                        Flexible(
+                          flex: 4,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _getStatusText(state.status),
+                                  style: theme.textTheme.headlineMedium
+                                      ?.copyWith(
+                                        color: _getStatusColor(
+                                          state.status,
+                                          theme,
+                                        ),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                                const SizedBox(height: 16),
+                                Hero(
+                                  tag: 'timer_display',
+                                  child: Text(
+                                    _formatTime(state.elapsedMilliseconds),
+                                    style: theme.textTheme.displayLarge
+                                        ?.copyWith(
+                                          color: _getStatusColor(
+                                            state.status,
+                                            theme,
+                                          ),
+                                        ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-
-                        const Spacer(),
                       ],
                     ),
                   ),
