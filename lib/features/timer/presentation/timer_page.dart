@@ -24,103 +24,120 @@ class TimerPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: Listener(
-        onPointerDown: (event) => ref
-            .read(timerControllerProvider.notifier)
-            .handlePointerDown(event.pointer),
-        onPointerUp: (event) => ref
-            .read(timerControllerProvider.notifier)
-            .handlePointerUp(event.pointer),
-        onPointerCancel: (event) => ref
-            .read(timerControllerProvider.notifier)
-            .handlePointerUp(event.pointer),
-        behavior: HitTestBehavior.opaque,
-        child: Stack(
-          children: [
-            // Background Shape
-            Positioned.fill(
-              child: CustomPaint(
-                painter: StackMatPainter(
-                  color: theme.colorScheme.surfaceContainerHighest,
-                ),
-              ),
-            ),
-
-            // Hand Pads
-            Positioned(
-              bottom: 120,
-              left: 40,
-              child: _HandPad(color: _getPadColor(state.status)),
-            ),
-            Positioned(
-              bottom: 120,
-              right: 40,
-              child: _HandPad(color: _getPadColor(state.status)),
-            ),
-
-            // Content
-            SafeArea(
-              child: Column(
+      body: Stack(
+        children: [
+          // 1. Timer Interaction Layer
+          Positioned.fill(
+            child: Listener(
+              onPointerDown: (event) => ref
+                  .read(timerControllerProvider.notifier)
+                  .handlePointerDown(event.pointer),
+              onPointerUp: (event) => ref
+                  .read(timerControllerProvider.notifier)
+                  .handlePointerUp(event.pointer),
+              onPointerCancel: (event) => ref
+                  .read(timerControllerProvider.notifier)
+                  .handlePointerUp(event.pointer),
+              behavior: HitTestBehavior.opaque,
+              child: Stack(
                 children: [
-                  const SizedBox(height: 20),
-                  // Scramble
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      state.scramble,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                  // Background Shape
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: StackMatPainter(
+                        color: theme.colorScheme.surfaceContainerHighest,
                       ),
                     ),
                   ),
 
-                  const Spacer(),
-
-                  // Status Text
-                  Text(
-                    _getStatusText(state.status),
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      color: _getStatusColor(state.status, theme),
-                      fontWeight: FontWeight.bold,
-                    ),
+                  // Hand Pads
+                  Positioned(
+                    bottom: 120,
+                    left: 40,
+                    child: _HandPad(color: _getPadColor(state.status)),
                   ),
-                  const SizedBox(height: 16),
-
-                  // Timer Display
-                  Hero(
-                    tag: 'timer_display',
-                    child: Text(
-                      _formatTime(state.elapsedMilliseconds),
-                      style: theme.textTheme.displayLarge?.copyWith(
-                        color: _getStatusColor(state.status, theme),
-                      ),
-                    ),
+                  Positioned(
+                    bottom: 120,
+                    right: 40,
+                    child: _HandPad(color: _getPadColor(state.status)),
                   ),
-
-                  const Spacer(),
-
-                  // Reset Button
-                  if (state.status == TimerStatus.stopped ||
-                      (state.status == TimerStatus.idle &&
-                          state.elapsedMilliseconds > 0))
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 40),
-                      child: IconButton(
-                        iconSize: 48,
-                        icon: const Icon(Icons.refresh),
-                        onPressed: () =>
-                            ref.read(timerControllerProvider.notifier).reset(),
-                        color: theme.colorScheme.onSurface,
-                      ),
-                    )
-                  else
-                    const SizedBox(height: 88),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+
+          // 2. UI Overlay Layer
+          SafeArea(
+            child: Column(
+              children: [
+                // Info Section (Ignored so touches pass to timer layer)
+                Expanded(
+                  child: IgnorePointer(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 20),
+                        // Scramble
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          child: Text(
+                            state.scramble,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+
+                        const Spacer(),
+
+                        // Status Text
+                        Text(
+                          _getStatusText(state.status),
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            color: _getStatusColor(state.status, theme),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Timer Display
+                        Hero(
+                          tag: 'timer_display',
+                          child: Text(
+                            _formatTime(state.elapsedMilliseconds),
+                            style: theme.textTheme.displayLarge?.copyWith(
+                              color: _getStatusColor(state.status, theme),
+                            ),
+                          ),
+                        ),
+
+                        const Spacer(),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Control Section (Interactive)
+                // Reset Button
+                if (state.status == TimerStatus.stopped ||
+                    (state.status == TimerStatus.idle &&
+                        state.elapsedMilliseconds > 0))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 40),
+                    child: IconButton(
+                      iconSize: 48,
+                      icon: const Icon(Icons.refresh),
+                      onPressed: () =>
+                          ref.read(timerControllerProvider.notifier).reset(),
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  )
+                else
+                  const SizedBox(height: 88),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

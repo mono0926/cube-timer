@@ -5,7 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'ticker_service.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 ITickerService tickerService(Ref ref) {
   return TickerService();
 }
@@ -69,3 +69,4 @@ class TickerService implements ITickerService {
     _stopwatch.reset();
   }
 }
+``

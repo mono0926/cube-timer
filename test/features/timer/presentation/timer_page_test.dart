@@ -150,6 +150,31 @@ void main() {
         await tester.pump();
 
         expect(find.text('ストップ'), findsOneWidget);
+
+        // 6. Reset
+        // Advance time a bit to make sure we have non-zero time
+        // (already moved 1230ms)
+
+        // Find reset button
+        final resetButton = find.byIcon(Icons.refresh);
+        expect(resetButton, findsOneWidget);
+
+        // Tap reset - simulating real world where down can trigger UI update
+        final resetCenter = tester.getCenter(resetButton);
+        final resetGesture = await tester.startGesture(resetCenter);
+
+        // This pump is crucial: it lets the Listener react to PointerDown
+        await tester.pump();
+
+        // Timer should mistakenly go to "Holding" (Red screen, text "そのまま...")
+        // creating the bug where Reset button disappears
+
+        await resetGesture.up();
+        await tester.pump();
+
+        // Should be Idle and 0
+        expect(find.text('タッチしてスタート'), findsOneWidget);
+        expect(find.text('00:00.00'), findsOneWidget);
       },
     );
   });
