@@ -17,6 +17,9 @@ class TimerPage extends ConsumerWidget {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('Cube Timer'),
+        centerTitle: false,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.history),
@@ -26,6 +29,22 @@ class TimerPage extends ConsumerWidget {
       ),
       body: Stack(
         children: [
+          // 0. Global Background (Gorgeous Fixed)
+          Positioned.fill(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 500),
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  radius: 1.5,
+                  colors: [
+                    Colors.purple.shade900,
+                    Colors.black,
+                  ],
+                ),
+              ),
+            ),
+          ),
+
           // 1. Timer Interaction Layer
           Positioned.fill(
             child: Listener(
@@ -45,7 +64,7 @@ class TimerPage extends ConsumerWidget {
                   Positioned.fill(
                     child: CustomPaint(
                       painter: StackMatPainter(
-                        color: theme.colorScheme.surfaceContainerHighest,
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
                   ),
@@ -67,7 +86,6 @@ class TimerPage extends ConsumerWidget {
           ),
 
           // 2. UI Overlay Layer
-          // 2. UI Overlay Layer
           SafeArea(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -86,11 +104,20 @@ class TimerPage extends ConsumerWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 32),
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
-                              child: Text(
-                                state.scramble,
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.headlineSmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
+                              child: AnimatedDefaultTextStyle(
+                                duration: const Duration(milliseconds: 300),
+                                style: theme.textTheme.headlineSmall!.copyWith(
+                                  color: Colors.white70,
+                                  shadows: [
+                                    const BoxShadow(
+                                      color: Colors.purpleAccent,
+                                      blurRadius: 10,
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  state.scramble,
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             ),
@@ -105,29 +132,46 @@ class TimerPage extends ConsumerWidget {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  _getStatusText(state.status),
-                                  style: theme.textTheme.headlineMedium
-                                      ?.copyWith(
-                                        color: _getStatusColor(
-                                          state.status,
-                                          theme,
-                                        ),
+                                // Status
+                                AnimatedDefaultTextStyle(
+                                  duration: const Duration(milliseconds: 200),
+                                  style: theme.textTheme.headlineMedium!
+                                      .copyWith(
+                                        color: _getStatusColor(state.status),
                                         fontWeight: FontWeight.bold,
+                                        shadows: [
+                                          BoxShadow(
+                                            color: _getStatusColor(
+                                              state.status,
+                                            ).withValues(alpha: 0.8),
+                                            blurRadius: 20,
+                                          ),
+                                        ],
                                       ),
+                                  child: Text(_getStatusText(state.status)),
                                 ),
                                 const SizedBox(height: 16),
+                                // Timer Display
                                 Hero(
                                   tag: 'timer_display',
-                                  child: Text(
-                                    _formatTime(state.elapsedMilliseconds),
-                                    style: theme.textTheme.displayLarge
-                                        ?.copyWith(
-                                          color: _getStatusColor(
-                                            state.status,
-                                            theme,
-                                          ),
+                                  child: AnimatedDefaultTextStyle(
+                                    duration: const Duration(milliseconds: 100),
+                                    style: theme.textTheme.displayLarge!
+                                        .copyWith(
+                                          color: _getStatusColor(state.status),
+                                          shadows: [
+                                            BoxShadow(
+                                              color: _getStatusColor(
+                                                state.status,
+                                              ).withValues(alpha: 0.6),
+                                              blurRadius: 30,
+                                              spreadRadius: 5,
+                                            ),
+                                          ],
                                         ),
+                                    child: Text(
+                                      _formatTime(state.elapsedMilliseconds),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -151,7 +195,7 @@ class TimerPage extends ConsumerWidget {
                       icon: const Icon(Icons.refresh),
                       onPressed: () =>
                           ref.read(timerControllerProvider.notifier).reset(),
-                      color: theme.colorScheme.onSurface,
+                      color: Colors.white,
                     ),
                   )
                 else
@@ -194,18 +238,18 @@ class TimerPage extends ConsumerWidget {
     }
   }
 
-  Color _getStatusColor(TimerStatus status, ThemeData theme) {
+  Color _getStatusColor(TimerStatus status) {
     switch (status) {
       case TimerStatus.idle:
-        return theme.colorScheme.onSurface;
+        return Colors.cyanAccent;
       case TimerStatus.holding:
-        return Colors.red;
+        return Colors.orangeAccent;
       case TimerStatus.ready:
-        return Colors.green;
+        return Colors.greenAccent;
       case TimerStatus.running:
-        return theme.colorScheme.onSurface;
+        return Colors.white;
       case TimerStatus.stopped:
-        return theme.colorScheme.onSurface;
+        return Colors.white70;
     }
   }
 
@@ -230,7 +274,19 @@ class _HandPad extends StatelessWidget {
       duration: const Duration(milliseconds: 200),
       width: 100,
       height: 100,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        boxShadow: color != Colors.transparent
+            ? [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.8),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                ),
+              ]
+            : null,
+      ),
       child: Icon(
         Icons.front_hand,
         size: 60,
