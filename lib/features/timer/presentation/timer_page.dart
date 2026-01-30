@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/router/app_router.dart';
@@ -12,6 +13,20 @@ class TimerPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(timerControllerProvider);
     final theme = Theme.of(context);
+
+    // Haptic Feedback Logic
+    ref.listen<TimerState>(timerControllerProvider, (previous, next) {
+      if (previous?.status == TimerStatus.holding &&
+          next.status == TimerStatus.ready) {
+        HapticFeedback.mediumImpact();
+      } else if (previous?.status == TimerStatus.ready &&
+          next.status == TimerStatus.running) {
+        HapticFeedback.heavyImpact();
+      } else if (previous?.status == TimerStatus.running &&
+          next.status == TimerStatus.stopped) {
+        HapticFeedback.heavyImpact();
+      }
+    });
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -48,9 +63,15 @@ class TimerPage extends ConsumerWidget {
           // 1. Timer Interaction Layer
           Positioned.fill(
             child: Listener(
-              onPointerDown: (event) => ref
-                  .read(timerControllerProvider.notifier)
-                  .handlePointerDown(event.pointer),
+              onPointerDown: (event) {
+                if (state.status == TimerStatus.idle ||
+                    state.status == TimerStatus.stopped) {
+                  HapticFeedback.lightImpact();
+                }
+                ref
+                    .read(timerControllerProvider.notifier)
+                    .handlePointerDown(event.pointer);
+              },
               onPointerUp: (event) => ref
                   .read(timerControllerProvider.notifier)
                   .handlePointerUp(event.pointer),
@@ -88,52 +109,53 @@ class TimerPage extends ConsumerWidget {
           // 2. UI Overlay Layer
           SafeArea(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                // Info Section (Ignored so touches pass to timer layer)
+                // Scramble Section
                 Expanded(
-                  child: IgnorePointer(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        const SizedBox(height: 20),
-                        // Scramble
-                        Flexible(
-                          flex: 2,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 32),
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: AnimatedDefaultTextStyle(
-                                duration: const Duration(milliseconds: 300),
-                                style: theme.textTheme.headlineSmall!.copyWith(
-                                  color: Colors.white70,
-                                  shadows: [
-                                    const BoxShadow(
-                                      color: Colors.purpleAccent,
-                                      blurRadius: 10,
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  state.scramble,
-                                  textAlign: TextAlign.center,
-                                ),
+                  flex: 3,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    alignment: Alignment.center,
+                    child: IgnorePointer(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 300),
+                          style: theme.textTheme.headlineSmall!.copyWith(
+                            color: Colors.white70,
+                            shadows: [
+                              const BoxShadow(
+                                color: Colors.purpleAccent,
+                                blurRadius: 10,
                               ),
-                            ),
+                            ],
+                          ),
+                          child: Text(
+                            state.scramble,
+                            textAlign: TextAlign.center,
                           ),
                         ),
+                      ),
+                    ),
+                  ),
+                ),
 
-                        // Status Text & Timer
-                        Flexible(
-                          flex: 4,
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Status
-                                AnimatedDefaultTextStyle(
+                // Timer & Status Section
+                Expanded(
+                  flex: 5,
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: IgnorePointer(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Status Text (Fixed Height Wrapper)
+                            SizedBox(
+                              height: 60,
+                              child: Center(
+                                child: AnimatedDefaultTextStyle(
                                   duration: const Duration(milliseconds: 200),
                                   style: theme.textTheme.headlineMedium!
                                       .copyWith(
@@ -150,15 +172,22 @@ class TimerPage extends ConsumerWidget {
                                       ),
                                   child: Text(_getStatusText(state.status)),
                                 ),
-                                const SizedBox(height: 16),
-                                // Timer Display
-                                Hero(
+                              ),
+                            ),
+                            // Timer Display (Fixed Height Wrapper)
+                            SizedBox(
+                              height: 120,
+                              child: Center(
+                                child: Hero(
                                   tag: 'timer_display',
                                   child: AnimatedDefaultTextStyle(
                                     duration: const Duration(milliseconds: 100),
                                     style: theme.textTheme.displayLarge!
                                         .copyWith(
                                           color: _getStatusColor(state.status),
+                                          fontFeatures: [
+                                            const FontFeature.tabularFigures(),
+                                          ],
                                           shadows: [
                                             BoxShadow(
                                               color: _getStatusColor(
@@ -174,32 +203,38 @@ class TimerPage extends ConsumerWidget {
                                     ),
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
 
-                // Control Section (Interactive)
-                // Reset Button
-                if (state.status == TimerStatus.stopped ||
-                    (state.status == TimerStatus.idle &&
-                        state.elapsedMilliseconds > 0))
-                  Padding(
+                // Control Section
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    alignment: Alignment.bottomCenter,
                     padding: const EdgeInsets.only(bottom: 40),
-                    child: IconButton(
-                      iconSize: 48,
-                      icon: const Icon(Icons.refresh),
-                      onPressed: () =>
-                          ref.read(timerControllerProvider.notifier).reset(),
-                      color: Colors.white,
-                    ),
-                  )
-                else
-                  const SizedBox(height: 88),
+                    child:
+                        (state.status == TimerStatus.stopped ||
+                            (state.status == TimerStatus.idle &&
+                                state.elapsedMilliseconds > 0))
+                        ? IconButton(
+                            iconSize: 48,
+                            icon: const Icon(Icons.refresh),
+                            onPressed: () {
+                              ref
+                                  .read(timerControllerProvider.notifier)
+                                  .reset();
+                            },
+                            color: Colors.white,
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ),
               ],
             ),
           ),
