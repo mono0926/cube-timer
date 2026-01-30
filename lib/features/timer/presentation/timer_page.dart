@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/router/app_router.dart';
 import '../domain/timer_provider.dart';
@@ -17,12 +16,7 @@ class TimerPage extends ConsumerWidget {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(
-          'Cube Timer',
-          style: GoogleFonts.audiowide(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: const Text('Cube Timer'),
         actions: [
           IconButton(
             icon: const Icon(Icons.history),
@@ -76,7 +70,6 @@ class TimerPage extends ConsumerWidget {
                       state.scramble,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.headlineSmall?.copyWith(
-                        fontFamily: GoogleFonts.chivoMono().fontFamily,
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
@@ -99,11 +92,8 @@ class TimerPage extends ConsumerWidget {
                     tag: 'timer_display',
                     child: Text(
                       _formatTime(state.elapsedMilliseconds),
-                      style: GoogleFonts.chivoMono(
-                        fontSize: 80,
-                        fontWeight: FontWeight.w300,
+                      style: theme.textTheme.displayLarge?.copyWith(
                         color: _getStatusColor(state.status, theme),
-                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                   ),

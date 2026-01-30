@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../history/domain/history_provider.dart';
@@ -101,18 +100,14 @@ class HistoryPage extends ConsumerWidget {
                 ),
                 title: Text(
                   _formatTime(item.durationMilliseconds),
-                  style: GoogleFonts.chivoMono(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: theme.textTheme.titleLarge,
                 ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       item.scramble,
-                      style: GoogleFonts.robotoMono(
-                        fontSize: 12,
+                      style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.secondary,
                       ),
                     ),

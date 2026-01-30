@@ -168,10 +168,13 @@ globs: ['**/*.dart', 'pubspec.yaml', 'analysis_options.yaml', '**/*.md']
 - **アニメーション:** アニメーションを適切に使用して、ユーザー体験を向上。
   - ただし、過度なものは避け、またコードの複雑性も抑える工夫を(`TweenAnimationBuilder`活用など)
 
-### テーマ設定
+### テーマ設定 (Strict Theming)
 
-- **テーマの一元化:** 一元化された `ThemeData` オブジェクトを定義。
-  - 色・フォントサイズなどをハードコーティングしない
+- **ハードコーディング禁止 (重要):** Widget内で色（`Colors.red`など）やフォントサイズ（`fontSize: 20`など）を直接指定しないでください。
+  - 常に `Theme.of(context).colorScheme` や `Theme.of(context).textTheme` を使用してください。
+  - `GoogleFonts.xxx()` をWidget内で直接使用せず、`app_theme.dart` で定義した `TextTheme` を参照してください。
+- **テーマの一元化:** アプリ全体のデザイン定義は `app_theme.dart` に集約してください。
+  - 特定の画面でのみ使うスタイルであっても、可能な限り `ThemeData` 内に意味的な定義（`displayLarge`, `headlineSmall`など）として記述するか、`ThemeExtension` を利用してください。
 - **ライト/ダークテーマ:** `theme` と `darkTheme` を使用して両方のモードをサポートし、ユーザーが切り替えられるように。
 - **カラースキーム:** `ColorScheme.fromSeed` を使用して調和のとれたパレットを生成。
 - **コンポーネントテーマ:** `appBarTheme` などの特定のプロパティを使用して、個々のMaterialコンポーネントをカスタマイズ。
@@ -187,11 +190,6 @@ globs: ['**/*.dart', 'pubspec.yaml', 'analysis_options.yaml', '**/*.md']
 - **ネットワーク画像:** `cached_network_image` を使用。
 - **カスタムアイコン:** `ImageIcon` を使用。
 
-## UIテーマとスタイリングコード
-
-- **レスポンシブ:** `LayoutBuilder` または `MediaQuery` を使用。
-- **テキスト:** `Theme.of(context).textTheme` を使用。
-
 ## Material Themingのベストプラクティス (Material 3)
 
 - **ColorScheme.fromSeed:** ライト/ダークモード用のパレット生成に使用。
@@ -204,6 +202,7 @@ globs: ['**/*.dart', 'pubspec.yaml', 'analysis_options.yaml', '**/*.md']
 - **Wrap:** 折り返しが必要な場合に使用。
 - **SingleChildScrollView:** 固定サイズのコンテンツが画面からはみ出す場合に使用。
 - **OverlayPortal:** ドロップダウンやツールチップなど、他のすべての上に表示するUI要素に使用。
+- **レスポンシブ:** `LayoutBuilder` または `MediaQuery` を使用して画面サイズに応じたレイアウトを行ってください。
 
 ## 配色 (Color Scheme) ベストプラクティス
 

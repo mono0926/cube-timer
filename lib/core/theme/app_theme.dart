@@ -14,14 +14,15 @@ ThemeData lightTheme(Ref ref) {
     useMaterial3: true,
     colorScheme: colorScheme,
     scaffoldBackgroundColor: colorScheme.surface,
-    textTheme: GoogleFonts.outfitTextTheme().apply(
-      bodyColor: colorScheme.onSurface,
-      displayColor: colorScheme.onSurface,
-    ),
-    appBarTheme: const AppBarTheme(
+    textTheme: _buildTextTheme(colorScheme),
+    appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
+      titleTextStyle: GoogleFonts.audiowide(
+        fontSize: 22,
+        color: colorScheme.onSurface,
+      ),
     ),
   );
 }
@@ -36,14 +37,41 @@ ThemeData darkTheme(Ref ref) {
     useMaterial3: true,
     colorScheme: colorScheme,
     scaffoldBackgroundColor: colorScheme.surface,
-    textTheme: GoogleFonts.outfitTextTheme().apply(
-      bodyColor: colorScheme.onSurface,
-      displayColor: colorScheme.onSurface,
-    ),
-    appBarTheme: const AppBarTheme(
+    textTheme: _buildTextTheme(colorScheme),
+    appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
+      titleTextStyle: GoogleFonts.audiowide(
+        fontSize: 22,
+        color: colorScheme.onSurface,
+      ),
     ),
   );
+}
+
+TextTheme _buildTextTheme(ColorScheme colorScheme) {
+  final baseTheme = GoogleFonts.outfitTextTheme();
+  return baseTheme
+      .copyWith(
+        // Timer Display
+        displayLarge: GoogleFonts.chivoMono(
+          fontSize: 80,
+          fontWeight: FontWeight.w300,
+          fontFeatures: const [FontFeature.tabularFigures()],
+        ),
+        // Scramble Display
+        headlineSmall: GoogleFonts.chivoMono(
+          fontSize: 24,
+        ),
+        // History List Time
+        titleLarge: GoogleFonts.chivoMono(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      )
+      .apply(
+        bodyColor: colorScheme.onSurface,
+        displayColor: colorScheme.onSurface,
+      );
 }
