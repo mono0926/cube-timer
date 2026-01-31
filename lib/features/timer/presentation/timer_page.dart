@@ -279,7 +279,7 @@ class TimerPage extends ConsumerWidget {
   String _getStatusText(TimerStatus status) {
     switch (status) {
       case TimerStatus.idle:
-        return 'タッチしてスタート';
+        return 'ホールドしてスタート';
       case TimerStatus.holding:
         return 'そのまま...';
       case TimerStatus.ready:

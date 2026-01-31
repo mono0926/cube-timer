@@ -112,7 +112,7 @@ void main() {
 
     // 2. Start Timer: Idle -> Holding -> Ready -> Running
     // We need center for gestures
-    final startText = find.text('タッチしてスタート');
+    final startText = find.text('ホールドしてスタート');
     final center = tester.getCenter(startText);
 
     // Down (Holding)

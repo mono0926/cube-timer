@@ -100,7 +100,7 @@ void main() {
     testWidgets('Initial state is correct', (tester) async {
       await pumpTimerPage(tester);
 
-      expect(find.text('タッチしてスタート'), findsOneWidget);
+      expect(find.text('ホールドしてスタート'), findsOneWidget);
       expect(find.text('00:00.00'), findsOneWidget);
       expect(find.byIcon(Icons.history), findsOneWidget);
     });
@@ -157,7 +157,7 @@ void main() {
         await tester.pump();
 
         // Should be Idle and 0
-        expect(find.text('タッチしてスタート'), findsOneWidget);
+        expect(find.text('ホールドしてスタート'), findsOneWidget);
         expect(find.text('00:00.00'), findsOneWidget);
       },
     );
@@ -173,7 +173,7 @@ void main() {
         await pumpTimerPage(tester);
 
         // Verify key widgets are present
-        expect(find.text('タッチしてスタート'), findsOneWidget);
+        expect(find.text('ホールドしてスタート'), findsOneWidget);
         expect(find.text('00:00.00'), findsOneWidget);
       },
     );
@@ -190,7 +190,7 @@ void main() {
       await pumpTimerPage(tester);
 
       // Start timer: Down on text
-      final startText = find.text('タッチしてスタート');
+      final startText = find.text('ホールドしてスタート');
       final center = tester.getCenter(startText);
       final gesture = await tester.startGesture(center);
       await tester.pump();
@@ -228,8 +228,8 @@ void main() {
       await tester.tap(resetButton);
       await tester.pump();
 
-      // Should be back to Idle ("タッチしてスタート")
-      expect(find.text('タッチしてスタート'), findsOneWidget);
+      // Should be back to Idle ("ホールドしてスタート")
+      expect(find.text('ホールドしてスタート'), findsOneWidget);
     });
   });
 }
