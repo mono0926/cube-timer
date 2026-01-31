@@ -1,8 +1,8 @@
-# timer
-
-![App Screenshot](doc/images/screenshot.png)
+# Rubik's Cube Timer
 
 ムスッコ用のルービックキューブタイマー
+
+![App Screenshot](doc/images/screenshot.png)
 
 - コードは全てAntigravityへの指示で作成
   - Gemini 3 Pro使用
