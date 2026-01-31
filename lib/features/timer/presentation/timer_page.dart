@@ -223,6 +223,8 @@ class TimerPage extends ConsumerWidget {
 
                 // Control Section (Fixed Height instead of Expanded)
                 // NO IgnorePointer here!
+                // Control Section (Fixed Height instead of Expanded)
+                // NO IgnorePointer here!
                 Container(
                   alignment: Alignment.bottomCenter,
                   padding: const EdgeInsets.only(bottom: 40),
@@ -242,6 +244,9 @@ class TimerPage extends ConsumerWidget {
                         )
                       : const SizedBox.shrink(),
                 ),
+
+                // Trivia Widget (Visible only in Idle 0s state)
+                const TriviaWidget(),
               ],
             ),
           ),
