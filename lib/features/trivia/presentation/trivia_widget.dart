@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,31 +15,19 @@ class TriviaWidget extends ConsumerStatefulWidget {
 
 class _TriviaWidgetState extends ConsumerState<TriviaWidget> {
   TriviaItem? _currentItem;
-  Timer? _rotationTimer;
+  // Track previous visibility to detect re-entry to Idle state
+  final bool _wasVisible = false;
 
   @override
   void initState() {
     super.initState();
-    // Initial fetch
     _fetchNewTrivia();
-    // Rotate trivia every 10 seconds
-    _rotationTimer = Timer.periodic(const Duration(seconds: 10), (_) {
-      if (mounted) {
-        _fetchNewTrivia();
-      }
-    });
   }
 
   void _fetchNewTrivia() {
     setState(() {
       _currentItem = ref.read(triviaRepositoryProvider).fetchRandomTrivia();
     });
-  }
-
-  @override
-  void dispose() {
-    _rotationTimer?.cancel();
-    super.dispose();
   }
 
   @override
@@ -53,30 +39,48 @@ class _TriviaWidgetState extends ConsumerState<TriviaWidget> {
     final isZero = timerState.elapsedMilliseconds == 0;
 
     // Only show when Idle/Stopped AND time is 0 (or just stopped/reset state)
-    // User requested "Idle state" effectively.
     final isVisible = isIdle && isZero;
+
+    // Detect transition from invisible to visible -> Refresh content
+    if (isVisible && !_wasVisible) {
+      // Logic handled by ref.listen below
+    }
+
+    // Use ref.listen for side effects instead of checking in build
+    ref.listen(timerControllerProvider, (previous, next) {
+      final prevIdle =
+          previous?.status == TimerStatus.idle ||
+          previous?.status == TimerStatus.stopped;
+      final prevZero = previous?.elapsedMilliseconds == 0;
+      final previousVisible = prevIdle && prevZero;
+
+      final nextIdle =
+          next.status == TimerStatus.idle || next.status == TimerStatus.stopped;
+      final nextZero = next.elapsedMilliseconds == 0;
+      final nextVisible = nextIdle && nextZero;
+
+      if (!previousVisible && nextVisible) {
+        _fetchNewTrivia();
+      }
+    });
 
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 500),
       opacity: isVisible ? 1.0 : 0.0,
       child: Container(
-        // Place underneath the area where hands might be, but above bottom edge.
-        // Adjust padding to not overlap with reset button area if it were visible (though they are mutually exclusive mostly)
+        // Place underneath: padding bottom 20
         padding: const EdgeInsets.only(left: 40, right: 40, bottom: 20),
         alignment: Alignment.bottomCenter,
-        // Ensure it doesn't block touches if invisible
         child: IgnorePointer(
           ignoring: !isVisible,
           child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 800),
+            duration: const Duration(milliseconds: 600),
             transitionBuilder: (child, animation) {
               return FadeTransition(
                 opacity: animation,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, 0.2),
-                    end: Offset.zero,
-                  ).animate(animation),
+                child: SizeTransition(
+                  sizeFactor: animation,
+                  axisAlignment: -1,
                   child: child,
                 ),
               );
@@ -85,46 +89,35 @@ class _TriviaWidgetState extends ConsumerState<TriviaWidget> {
                 ? const SizedBox.shrink()
                 : KeyedSubtree(
                     key: ValueKey(_currentItem!.content),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'DID YOU KNOW?',
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                color: Colors.cyanAccent.withOpacity(0.7),
-                                letterSpacing: 2,
-                                fontWeight: FontWeight.bold,
-                              ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _fetchNewTrivia,
+                        borderRadius: BorderRadius.circular(12),
+                        overlayColor: WidgetStateProperty.all(
+                          Colors.cyanAccent.withValues(alpha: 0.1),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _currentItem!.content,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Colors.white.withOpacity(0.8),
-                                height: 1.4,
-                                shadows: [
-                                  BoxShadow(
-                                    color: Colors.purple.withOpacity(0.5),
-                                    blurRadius: 10,
-                                  ),
-                                ],
-                              ),
-                        ),
-                        if (_currentItem!.category.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            '#${_currentItem!.category}',
-                            style: Theme.of(context).textTheme.bodySmall
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Text(
+                            _currentItem!.content,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: Colors.white38,
-                                  fontSize: 10,
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  height: 1.4,
+                                  shadows: [
+                                    BoxShadow(
+                                      color: Colors.purple.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                      blurRadius: 10,
+                                    ),
+                                  ],
                                 ),
                           ),
-                        ],
-                      ],
+                        ),
+                      ),
                     ),
                   ),
           ),

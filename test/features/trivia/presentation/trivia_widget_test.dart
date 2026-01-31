@@ -2,15 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timer/core/utils/ticker_service.dart';
+import 'package:timer/features/history/domain/history_item.dart';
+import 'package:timer/features/history/domain/history_provider.dart';
 import 'package:timer/features/timer/presentation/timer_page.dart';
 import 'package:timer/features/trivia/domain/trivia_item.dart';
 import 'package:timer/features/trivia/domain/trivia_repository.dart';
+import 'package:timer/features/trivia/presentation/trivia_widget.dart'; // Added Import
 
 // --- Fakes ---
+class FakeHistoryController extends AutoDisposeAsyncNotifier<List<HistoryItem>>
+    implements History {
+  @override
+  Future<List<HistoryItem>> build() async => [];
+  @override
+  Future<void> add(String scramble, int duration) async {}
+  @override
+  Future<void> clear() async {}
+}
+
 class FakeTriviaRepository implements TriviaRepository {
+  int _counter = 0;
   @override
   TriviaItem fetchRandomTrivia() {
-    return const TriviaItem(content: 'Mock Trivia', category: 'Test');
+    _counter++;
+    return TriviaItem(
+      content: 'Mock Trivia $_counter',
+      category: 'Test',
+    );
   }
 }
 
@@ -69,8 +87,7 @@ void main() {
           triviaRepositoryProvider.overrideWith(
             (ref) => FakeTriviaRepository(),
           ),
-          // Use default providers for others or mock if needed (sound, history)
-          // Simplified here for trivia visibility check
+          historyProvider.overrideWith(FakeHistoryController.new),
         ],
         child: const MaterialApp(
           home: TimerPage(),
@@ -79,79 +96,78 @@ void main() {
     );
   }
 
-  testWidgets('TriviaWidget visibility logic', (tester) async {
+  testWidgets('TriviaWidget visibility and interaction logic', (tester) async {
+    // 1. Initial State: Idle 0s -> Visible
     await pumpTimerPage(tester);
+    // Background has infinite animation, so pumpAndSettle times out.
+    // Wait for fade in (500ms opacity + switch duration)
+    await tester.pump(const Duration(seconds: 1));
 
-    // Initial State: Idle, 0ms -> Visible
-    expect(find.text('DID YOU KNOW?'), findsOneWidget);
-    expect(find.text('Mock Trivia'), findsOneWidget);
+    // Verify content visible
+    expect(find.text('Mock Trivia 1'), findsOneWidget);
+    // "DID YOU KNOW" should be gone
+    expect(find.text('DID YOU KNOW?'), findsNothing);
 
-    // Interaction Flow: Start Timer -> Should Hide
-
-    // 1. Touch down (Idle -> Holding)
-    // Trivia should fade out or be hidden?
-    // Logic: isIdle && isZero. Holding is NOT idle.
-
+    // 2. Start Timer: Idle -> Holding -> Ready -> Running
+    // We need center for gestures
     final startText = find.text('タッチしてスタート');
     final center = tester.getCenter(startText);
+
+    // Down (Holding)
     final gesture = await tester.startGesture(center);
     await tester.pump();
 
-    // Status: Holding. isIdle = false.
-    // Animation fade out takes 500ms
-    await tester.pump(const Duration(milliseconds: 600));
-
-    // Verify NOT visible (opacity 0)
-    // find.text still finds offstage/invisible widgets usually unless we check opacity
-    // But since it's AnimatedOpacity -> Opacity widget.
-    // Let's check the Opacity widget value wrapping TriviaWidget container.
-    // Or check if the text is still in tree? It is in tree (Stack).
-
-    // Find the widget structure or use hit test? IgnorePointer is used.
-    // Let's verify Opacity widget.
-    final opacityFinder = find.ancestor(
-      of: find.text('DID YOU KNOW?'),
-      matching: find.byType(AnimatedOpacity),
-    );
-    expect(opacityFinder, findsOneWidget);
-    final opacityWidget = tester.widget<AnimatedOpacity>(opacityFinder);
-    expect(opacityWidget.opacity, 0.0);
-
-    // 2. Advance to Ready
-    tickerService.fireOneShot();
+    // Holding
+    tickerService.fireOneShot(); // Ready delay
     await tester.pump();
 
-    // 3. Start (Running)
+    // Up (Running)
     await gesture.up();
-    await tester.pump();
+    await tester.pump(); // State update
+
+    // Simulate running
     tickerService.advance(const Duration(seconds: 1));
     await tester.pump();
 
-    // Running, >0ms -> Not visible
+    // Should be invisible now
+    await tester.pump(const Duration(milliseconds: 600)); // Wait for fade out
+
+    final opacityFinder = find.descendant(
+      of: find.byType(TriviaWidget),
+      matching: find.byType(AnimatedOpacity),
+    );
+    final opacityWidget = tester.widget<AnimatedOpacity>(opacityFinder);
     expect(opacityWidget.opacity, 0.0);
 
-    // 4. Stop
+    // 3. Stop
     await tester.tapAt(center);
     await tester.pump();
 
-    // Stopped, >0ms (1000ms) -> Not visible
-    // Logic: isIdle(idle or stopped) && isZero.
-    // Stopped is true, but isZero is false.
-    // So still invisible.
-
-    // Update reference to widget after pump
+    // Stopped, >0ms -> Not visible
     final opacityWidgetStopped = tester.widget<AnimatedOpacity>(opacityFinder);
     expect(opacityWidgetStopped.opacity, 0.0);
 
-    // 5. Reset
+    // 4. Reset -> Idle 0s
     final resetButton = find.byIcon(Icons.refresh);
     await tester.tap(resetButton);
     await tester.pump();
+    // Wait for fade in
+    await tester.pump(const Duration(seconds: 1));
 
-    // Idle, 0ms -> Visible again
-    await tester.pump(const Duration(milliseconds: 600)); // fade in
-
+    // Visible again?
     final opacityWidgetReset = tester.widget<AnimatedOpacity>(opacityFinder);
     expect(opacityWidgetReset.opacity, 1.0);
+
+    // Content Refresh on Re-entry?
+    // Expect NEW content (Mock Trivia 2) because we re-entered visible state
+    expect(find.text('Mock Trivia 2'), findsOneWidget);
+
+    // 5. Tap interaction
+    // Tap the valid text to refresh
+    await tester.tap(find.text('Mock Trivia 2'));
+    await tester.pump(const Duration(seconds: 1)); // Wait for switch
+
+    // Expect NEW content (Mock Trivia 3)
+    expect(find.text('Mock Trivia 3'), findsOneWidget);
   });
 }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/router/app_router.dart';
+import '../../trivia/presentation/trivia_widget.dart';
 import '../domain/timer_provider.dart';
 import '../domain/timer_state.dart';
 import 'rubik_particle_background.dart';

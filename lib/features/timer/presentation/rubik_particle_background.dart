@@ -40,7 +40,7 @@ class _RubikParticleBackgroundState
     )..repeat();
 
     // Initialize particles
-    for (int i = 0; i < 50; i++) {
+    for (var i = 0; i < 50; i++) {
       _particles.add(_createRandomParticle());
     }
   }
@@ -87,7 +87,7 @@ class _RubikParticleBackgroundState
   }
 
   void _updateParticles(TimerStatus status) {
-    for (var particle in _particles) {
+    for (final particle in _particles) {
       // Base rotation update
       particle.angle += particle.rotationSpeed;
 
@@ -95,26 +95,20 @@ class _RubikParticleBackgroundState
         case TimerStatus.idle:
           // Floating gracefully
           particle.position += particle.velocity;
-          break;
-
         case TimerStatus.holding:
           // Energy Charge: Converge to center
-          final center = const Offset(0.5, 0.5);
+          const center = Offset(0.5, 0.5);
           final diff = center - particle.position;
           particle.position += diff * 0.05;
           // Sync vortex params to current pos just in case
           particle.radius = (particle.position - center).distance;
           particle.theta = atan2(diff.dy, diff.dx);
-          break;
-
         case TimerStatus.ready:
           // Tension: Jiggle in place
           particle.position += Offset(
             (_random.nextDouble() - 0.5) * 0.002,
             (_random.nextDouble() - 0.5) * 0.002,
           );
-          break;
-
         case TimerStatus.running:
           // Time Vortex / Floating: Spiraling gently
           const center = Offset(0.5, 0.5);
@@ -133,13 +127,13 @@ class _RubikParticleBackgroundState
 
           // Slowly drift outward or inward to keep it dynamic
           particle.radius += 0.0005;
-          if (particle.radius > 0.8) particle.radius = 0.05;
-
-          break;
+          if (particle.radius > 0.8) {
+            particle.radius = 0.05;
+          }
 
         case TimerStatus.stopped:
           // Explosion
-          final center = const Offset(0.5, 0.5);
+          const center = Offset(0.5, 0.5);
           final diff = particle.position - center;
           particle.position += diff * 0.1;
           particle.position += particle.velocity * 5;
@@ -150,39 +144,32 @@ class _RubikParticleBackgroundState
             particle.position.dy - 0.5,
             particle.position.dx - 0.5,
           );
-          break;
       }
 
       // Boundary check / Wrap around
       // Specialized logic for normal floating vs vortex mode
       if (status == TimerStatus.running) {
-        // Vortex mode handles its own wrapping logic via radius, but just in case
+        // Vortex mode handles its own wrapping logic via radius,
+        // but just in case
       } else {
-        if (particle.position.dx < -0.1)
+        if (particle.position.dx < -0.1) {
           particle.position = Offset(1.1, particle.position.dy);
-        if (particle.position.dx > 1.1)
+        }
+        if (particle.position.dx > 1.1) {
           particle.position = Offset(-0.1, particle.position.dy);
-        if (particle.position.dy < -0.1)
+        }
+        if (particle.position.dy < -0.1) {
           particle.position = Offset(particle.position.dx, 1.1);
-        if (particle.position.dy > 1.1)
+        }
+        if (particle.position.dy > 1.1) {
           particle.position = Offset(particle.position.dx, -0.1);
+        }
       }
     }
   }
 }
 
 class _Particle {
-  Offset position; // 0.0 to 1.0 (Cartesian)
-  Color color;
-  double size;
-  Offset velocity;
-  double angle;
-  double rotationSpeed;
-
-  // Vortex / Spiral params
-  double radius;
-  double theta;
-
   _Particle({
     required this.position,
     required this.color,
@@ -193,53 +180,61 @@ class _Particle {
     this.radius = 0.5,
     this.theta = 0.0,
   });
+
+  Offset position; // 0.0 to 1.0 (Cartesian)
+  Color color;
+  double size;
+  Offset velocity;
+  double angle;
+  double rotationSpeed;
+
+  // Vortex / Spiral params
+  double radius;
+  double theta;
 }
 
 class _ParticlePainter extends CustomPainter {
-  final List<_Particle> particles;
-
   _ParticlePainter(this.particles);
+  final List<_Particle> particles;
 
   @override
   void paint(Canvas canvas, Size size) {
-    for (var particle in particles) {
+    for (final particle in particles) {
       final paint = Paint()
-        ..color = particle.color.withOpacity(0.6)
+        ..color = particle.color.withValues(alpha: 0.6)
         ..style = PaintingStyle.fill;
+
+      // Black border
+      final borderPaint = Paint()
+        ..color = Colors.black.withValues(alpha: 0.3)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2;
 
       final x = particle.position.dx * size.width;
       final y = particle.position.dy * size.height;
 
-      canvas.save();
-      canvas.translate(x, y);
-      canvas.rotate(particle.angle);
-
-      // Draw a square (Rubik's sticker)
-      canvas.drawRect(
-        Rect.fromCenter(
-          center: Offset.zero,
-          width: particle.size,
-          height: particle.size,
-        ),
-        paint,
-      );
-
-      // Black border
-      final borderPaint = Paint()
-        ..color = Colors.black.withOpacity(0.3)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2;
-
-      canvas.drawRect(
-        Rect.fromCenter(
-          center: Offset.zero,
-          width: particle.size,
-          height: particle.size,
-        ),
-        borderPaint,
-      );
-
-      canvas.restore();
+      canvas
+        ..save()
+        ..translate(x, y)
+        ..rotate(particle.angle)
+        // Draw a square (Rubik's sticker)
+        ..drawRect(
+          Rect.fromCenter(
+            center: Offset.zero,
+            width: particle.size,
+            height: particle.size,
+          ),
+          paint,
+        )
+        ..drawRect(
+          Rect.fromCenter(
+            center: Offset.zero,
+            width: particle.size,
+            height: particle.size,
+          ),
+          borderPaint,
+        )
+        ..restore();
     }
   }
 
