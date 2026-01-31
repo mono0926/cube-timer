@@ -64,65 +64,64 @@ class _TriviaWidgetState extends ConsumerState<TriviaWidget> {
       }
     });
 
-    return AnimatedOpacity(
+    return AnimatedCrossFade(
       duration: const Duration(milliseconds: 500),
-      opacity: isVisible ? 1.0 : 0.0,
-      child: Container(
-        // Place underneath: padding bottom 20
+      crossFadeState: isVisible
+          ? CrossFadeState.showFirst
+          : CrossFadeState.showSecond,
+      firstChild: Container(
         padding: const EdgeInsets.only(left: 40, right: 40, bottom: 20),
         alignment: Alignment.bottomCenter,
-        child: IgnorePointer(
-          ignoring: !isVisible,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 600),
-            transitionBuilder: (child, animation) {
-              return FadeTransition(
-                opacity: animation,
-                child: SizeTransition(
-                  sizeFactor: animation,
-                  axisAlignment: -1,
-                  child: child,
-                ),
-              );
-            },
-            child: _currentItem == null
-                ? const SizedBox.shrink()
-                : KeyedSubtree(
-                    key: ValueKey(_currentItem!.content),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: _fetchNewTrivia,
-                        borderRadius: BorderRadius.circular(12),
-                        overlayColor: WidgetStateProperty.all(
-                          Colors.cyanAccent.withValues(alpha: 0.1),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Text(
-                            _currentItem!.content,
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  height: 1.4,
-                                  shadows: [
-                                    BoxShadow(
-                                      color: Colors.purple.withValues(
-                                        alpha: 0.5,
-                                      ),
-                                      blurRadius: 10,
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 600),
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: SizeTransition(
+                sizeFactor: animation,
+                axisAlignment: -1,
+                child: child,
+              ),
+            );
+          },
+          child: _currentItem == null
+              ? const SizedBox.shrink()
+              : KeyedSubtree(
+                  key: ValueKey(_currentItem!.content),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _fetchNewTrivia,
+                      borderRadius: BorderRadius.circular(12),
+                      overlayColor: WidgetStateProperty.all(
+                        Colors.cyanAccent.withOpacity(0.1),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(
+                          _currentItem!.content,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Colors.white.withOpacity(0.9),
+                                height: 1.4,
+                                shadows: [
+                                  BoxShadow(
+                                    color: Colors.purple.withOpacity(
+                                      0.5,
                                     ),
-                                  ],
-                                ),
-                          ),
+                                    blurRadius: 10,
+                                  ),
+                                ],
+                              ),
                         ),
                       ),
                     ),
                   ),
-          ),
+                ),
         ),
       ),
+      secondChild: const SizedBox(width: double.infinity, height: 0),
     );
   }
 }

@@ -134,20 +134,22 @@ void main() {
     // Should be invisible now
     await tester.pump(const Duration(milliseconds: 600)); // Wait for fade out
 
-    final opacityFinder = find.descendant(
+    final crossFadeFinder = find.descendant(
       of: find.byType(TriviaWidget),
-      matching: find.byType(AnimatedOpacity),
+      matching: find.byType(AnimatedCrossFade),
     );
-    final opacityWidget = tester.widget<AnimatedOpacity>(opacityFinder);
-    expect(opacityWidget.opacity, 0.0);
+    final crossFadeWidget = tester.widget<AnimatedCrossFade>(crossFadeFinder);
+    expect(crossFadeWidget.crossFadeState, CrossFadeState.showSecond);
 
     // 3. Stop
     await tester.tapAt(center);
     await tester.pump();
 
     // Stopped, >0ms -> Not visible
-    final opacityWidgetStopped = tester.widget<AnimatedOpacity>(opacityFinder);
-    expect(opacityWidgetStopped.opacity, 0.0);
+    final crossFadeWidgetStopped = tester.widget<AnimatedCrossFade>(
+      crossFadeFinder,
+    );
+    expect(crossFadeWidgetStopped.crossFadeState, CrossFadeState.showSecond);
 
     // 4. Reset -> Idle 0s
     final resetButton = find.byIcon(Icons.refresh);
@@ -157,8 +159,10 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     // Visible again?
-    final opacityWidgetReset = tester.widget<AnimatedOpacity>(opacityFinder);
-    expect(opacityWidgetReset.opacity, 1.0);
+    final crossFadeWidgetReset = tester.widget<AnimatedCrossFade>(
+      crossFadeFinder,
+    );
+    expect(crossFadeWidgetReset.crossFadeState, CrossFadeState.showFirst);
 
     // Content Refresh on Re-entry?
     // Expect NEW content (Mock Trivia 2) because we re-entered visible state

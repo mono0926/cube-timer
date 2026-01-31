@@ -122,7 +122,7 @@ class TimerPage extends ConsumerWidget {
               children: [
                 // Scramble Section
                 Expanded(
-                  flex: 3,
+                  flex: 2,
                   child: IgnorePointer(
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -150,72 +150,68 @@ class TimerPage extends ConsumerWidget {
                   ),
                 ),
 
-                // Timer & Status Section
+                // Status Section
                 Expanded(
-                  flex: 5,
                   child: IgnorePointer(
                     child: Container(
                       alignment: Alignment.center,
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Status Text (Fixed Height Wrapper)
-                            SizedBox(
-                              height: 60,
-                              child: Center(
-                                child: AnimatedDefaultTextStyle(
-                                  duration: const Duration(milliseconds: 200),
-                                  style: theme.textTheme.headlineMedium!
-                                      .copyWith(
-                                        color: _getStatusColor(state.status),
-                                        fontWeight: FontWeight.bold,
-                                        shadows: [
-                                          BoxShadow(
-                                            color: _getStatusColor(
-                                              state.status,
-                                            ).withValues(alpha: 0.8),
-                                            blurRadius: 20,
-                                          ),
-                                        ],
-                                      ),
-                                  child: Text(_getStatusText(state.status)),
-                                ),
+                        child: AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
+                          style: theme.textTheme.headlineMedium!.copyWith(
+                            color: _getStatusColor(state.status),
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              BoxShadow(
+                                color: _getStatusColor(
+                                  state.status,
+                                ).withValues(alpha: 0.8),
+                                blurRadius: 20,
                               ),
-                            ),
-                            // Timer Display (Fixed Height Wrapper)
-                            SizedBox(
-                              height: 120,
-                              child: Center(
-                                child: Hero(
-                                  tag: 'timer_display',
-                                  child: AnimatedDefaultTextStyle(
-                                    duration: const Duration(milliseconds: 100),
-                                    style: theme.textTheme.displayLarge!
-                                        .copyWith(
-                                          color: _getStatusColor(state.status),
-                                          fontFeatures: [
-                                            const FontFeature.tabularFigures(),
-                                          ],
-                                          shadows: [
-                                            BoxShadow(
-                                              color: _getStatusColor(
-                                                state.status,
-                                              ).withValues(alpha: 0.6),
-                                              blurRadius: 30,
-                                              spreadRadius: 5,
-                                            ),
-                                          ],
-                                        ),
-                                    child: Text(
-                                      _formatTime(state.elapsedMilliseconds),
-                                    ),
+                            ],
+                          ),
+                          child: Text(_getStatusText(state.status)),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Timer Section (Maximized)
+                Expanded(
+                  flex: 5,
+                  child: IgnorePointer(
+                    child: Container(
+                      alignment: Alignment.center,
+                      // Use contain to maximize size within the expanded area
+                      child: FittedBox(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Hero(
+                            tag: 'timer_display',
+                            child: AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 100),
+                              style: theme.textTheme.displayLarge!.copyWith(
+                                color: _getStatusColor(state.status),
+                                fontFeatures: [
+                                  const FontFeature.tabularFigures(),
+                                ],
+                                shadows: [
+                                  BoxShadow(
+                                    color: _getStatusColor(
+                                      state.status,
+                                    ).withValues(alpha: 0.6),
+                                    blurRadius: 30,
+                                    spreadRadius: 5,
                                   ),
-                                ),
+                                ],
+                              ),
+                              child: Text(
+                                _formatTime(state.elapsedMilliseconds),
                               ),
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
