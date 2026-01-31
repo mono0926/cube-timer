@@ -77,11 +77,7 @@ class _TriviaWidgetState extends ConsumerState<TriviaWidget> {
           transitionBuilder: (child, animation) {
             return FadeTransition(
               opacity: animation,
-              child: SizeTransition(
-                sizeFactor: animation,
-                axisAlignment: -1,
-                child: child,
-              ),
+              child: child,
             );
           },
           child: _currentItem == null
