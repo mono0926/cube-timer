@@ -53,7 +53,6 @@ class TimerPage extends ConsumerWidget {
                 Container(
                   decoration: BoxDecoration(
                     gradient: RadialGradient(
-                      center: Alignment.center,
                       radius: 1.5,
                       colors: [
                         Colors.purple.shade900,
@@ -123,10 +122,10 @@ class TimerPage extends ConsumerWidget {
                 // Scramble Section
                 Expanded(
                   flex: 3,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    alignment: Alignment.center,
-                    child: IgnorePointer(
+                  child: IgnorePointer(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      alignment: Alignment.center,
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: AnimatedDefaultTextStyle(
@@ -153,9 +152,9 @@ class TimerPage extends ConsumerWidget {
                 // Timer & Status Section
                 Expanded(
                   flex: 5,
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: IgnorePointer(
+                  child: IgnorePointer(
+                    child: Container(
+                      alignment: Alignment.center,
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Column(
@@ -222,28 +221,26 @@ class TimerPage extends ConsumerWidget {
                   ),
                 ),
 
-                // Control Section
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    alignment: Alignment.bottomCenter,
-                    padding: const EdgeInsets.only(bottom: 40),
-                    child:
-                        (state.status == TimerStatus.stopped ||
-                            (state.status == TimerStatus.idle &&
-                                state.elapsedMilliseconds > 0))
-                        ? IconButton(
-                            iconSize: 48,
-                            icon: const Icon(Icons.refresh),
-                            onPressed: () {
-                              ref
-                                  .read(timerControllerProvider.notifier)
-                                  .reset();
-                            },
-                            color: Colors.white,
-                          )
-                        : const SizedBox.shrink(),
-                  ),
+                // Control Section (Fixed Height instead of Expanded)
+                // NO IgnorePointer here!
+                Container(
+                  alignment: Alignment.bottomCenter,
+                  padding: const EdgeInsets.only(bottom: 40),
+                  height:
+                      100, // Fixed height to ensure button is always accessible
+                  child:
+                      (state.status == TimerStatus.stopped ||
+                          (state.status == TimerStatus.idle &&
+                              state.elapsedMilliseconds > 0))
+                      ? IconButton(
+                          iconSize: 48,
+                          icon: const Icon(Icons.refresh),
+                          onPressed: () {
+                            ref.read(timerControllerProvider.notifier).reset();
+                          },
+                          color: Colors.white,
+                        )
+                      : const SizedBox.shrink(),
                 ),
               ],
             ),

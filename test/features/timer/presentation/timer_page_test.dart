@@ -13,19 +13,12 @@ class WidgetTestTickerService implements ITickerService {
   void Function()? _periodicCallback;
   void Function()? _oneShotCallback;
 
-  // To simulate time passing in loop
-  // Timer? _simulatedTimer; // Removed unused field
-
   @override
   int get elapsedMilliseconds => _elapsedMilliseconds;
 
   void advance(Duration duration) {
     _elapsedMilliseconds += duration.inMilliseconds;
     _periodicCallback?.call();
-
-    // Check one shot
-    // In actual widget test, we might manually fire callbacks via advance
-    // For simplicity, we just assume tests manually advance time
   }
 
   void fireOneShot() {
@@ -152,23 +145,12 @@ void main() {
         expect(find.text('ストップ'), findsOneWidget);
 
         // 6. Reset
-        // Advance time a bit to make sure we have non-zero time
-        // (already moved 1230ms)
-
-        // Find reset button
         final resetButton = find.byIcon(Icons.refresh);
         expect(resetButton, findsOneWidget);
 
-        // Tap reset - simulating real world where down can trigger UI update
         final resetCenter = tester.getCenter(resetButton);
         final resetGesture = await tester.startGesture(resetCenter);
-
-        // This pump is crucial: it lets the Listener react to PointerDown
         await tester.pump();
-
-        // Timer should mistakenly go to "Holding" (Red screen, text "そのまま...")
-        // creating the bug where Reset button disappears
-
         await resetGesture.up();
         await tester.pump();
 
@@ -186,25 +168,66 @@ void main() {
         tester.view.devicePixelRatio = 1.0;
         addTearDown(tester.view.resetPhysicalSize);
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              tickerServiceProvider.overrideWith((ref) => tickerService),
-            ],
-            child: const MaterialApp(
-              home: TimerPage(),
-            ),
-          ),
-        );
+        await pumpTimerPage(tester);
 
         // Verify key widgets are present
         expect(find.text('タッチしてスタート'), findsOneWidget);
         expect(find.text('00:00.00'), findsOneWidget);
-
-        // Verify no overflow errors
-        // Flutter tests fail automatically on overflow exceptions,
-        // effectively checking this just by running successfully.
       },
     );
+
+    testWidgets('Reset button works in landscape mode', (tester) async {
+      // Set landscape size
+      tester.view.physicalSize = const Size(2000, 1000);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await pumpTimerPage(tester);
+
+      // Start timer: Down on text
+      final startText = find.text('タッチしてスタート');
+      final center = tester.getCenter(startText);
+      final gesture = await tester.startGesture(center);
+      await tester.pump();
+
+      // Holding
+      expect(find.text('そのまま...'), findsOneWidget);
+
+      // Advance to Ready
+      tickerService.fireOneShot();
+      await tester.pump();
+      expect(find.text('よーい'), findsOneWidget);
+
+      // Start
+      await gesture.up();
+      await tester.pump();
+      expect(find.text('スタート'), findsOneWidget);
+
+      // Advance time
+      tickerService.advance(const Duration(seconds: 1));
+      await tester.pump();
+
+      // Stop (tap running text)
+      // Since it is 'FittedBox', tap center of text is safe.
+      // But text string changed to 'スタート'.
+      await tester.tap(find.text('スタート'), warnIfMissed: false);
+      await tester.pump();
+      expect(find.text('ストップ'), findsOneWidget);
+
+      // Reset
+      final resetButton = find.byIcon(Icons.refresh);
+      expect(resetButton, findsOneWidget);
+
+      // We must tap specifically. `tap` finds center.
+      // Since we fixed the layout, center should be tappable.
+      await tester.tap(resetButton);
+      await tester.pump();
+
+      // Should be back to Idle ("タッチしてスタート")
+      expect(find.text('タッチしてスタート'), findsOneWidget);
+    });
   });
 }
