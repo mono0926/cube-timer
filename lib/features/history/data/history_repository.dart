@@ -31,6 +31,12 @@ class HistoryRepository {
     await _prefs.setStringList(_key, jsonList);
   }
 
+  Future<void> deleteItem(HistoryItem item) async {
+    final items = fetchItems()..removeWhere((e) => e.id == item.id);
+    final jsonList = items.map((e) => jsonEncode(e.toJson())).toList();
+    await _prefs.setStringList(_key, jsonList);
+  }
+
   Future<void> clear() async {
     await _prefs.remove(_key);
   }

@@ -27,6 +27,12 @@ class FakeHistory extends AutoDisposeAsyncNotifier<List<HistoryItem>>
     items = [];
     state = const AsyncValue.data([]);
   }
+
+  @override
+  Future<void> delete(HistoryItem item) async {
+    items = items.where((element) => element.id != item.id).toList();
+    state = AsyncValue.data(items);
+  }
 }
 
 void main() {

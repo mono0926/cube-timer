@@ -27,6 +27,12 @@ class History extends _$History {
     state = AsyncValue.data(repository.fetchItems());
   }
 
+  Future<void> delete(HistoryItem item) async {
+    final repository = ref.read(historyRepositoryProvider);
+    await repository.deleteItem(item);
+    state = AsyncValue.data(repository.fetchItems());
+  }
+
   Future<void> clear() async {
     final repository = ref.read(historyRepositoryProvider);
     await repository.clear();

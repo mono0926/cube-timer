@@ -247,7 +247,8 @@ class TimerPage extends ConsumerWidget {
                 ),
 
                 // Trivia Widget (Visible only in Idle 0s state)
-                const TriviaWidget(),
+                if (MediaQuery.sizeOf(context).height > 400)
+                  const TriviaWidget(),
               ],
             ),
           ),
