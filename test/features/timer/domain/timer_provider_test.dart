@@ -272,5 +272,30 @@ void main() {
         TimerStatus.running,
       );
     });
+
+    test('Cannot start holding from Stopped state (Requires Reset)', () {
+      final controller = container.read(timerControllerProvider.notifier);
+
+      // 1. Start -> Stop (Stopped state)
+      controller.handlePointerDown(1);
+      tickerService.advance(const Duration(milliseconds: 300)); // Ready
+      controller.handlePointerUp(1); // Start
+      tickerService.advance(const Duration(seconds: 1));
+      controller.handlePointerDown(1); // Stop
+
+      expect(
+        container.read(timerControllerProvider).status,
+        TimerStatus.stopped,
+      );
+
+      // 2. Try to hold again without reset
+      controller.handlePointerDown(1);
+
+      // Should NOT transition to holding (remain Stopped)
+      expect(
+        container.read(timerControllerProvider).status,
+        TimerStatus.stopped,
+      );
+    });
   });
 }

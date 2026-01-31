@@ -39,8 +39,7 @@ class TimerController extends _$TimerController {
       return;
     }
 
-    if (state.status == TimerStatus.idle ||
-        state.status == TimerStatus.stopped) {
+    if (state.status == TimerStatus.idle) {
       state = state.copyWith(status: TimerStatus.holding);
       _startHolding();
     }

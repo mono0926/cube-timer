@@ -74,8 +74,16 @@ class TimerPage extends ConsumerWidget {
           Positioned.fill(
             child: Listener(
               onPointerDown: (event) {
-                if (state.status == TimerStatus.idle ||
-                    state.status == TimerStatus.stopped) {
+                if (state.status == TimerStatus.stopped) {
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('リセットボタンを押してリセットしてください'),
+                      duration: Duration(milliseconds: 1500),
+                    ),
+                  );
+                } else if (state.status == TimerStatus.idle) {
                   HapticFeedback.lightImpact();
                 }
                 ref
