@@ -1,6 +1,12 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../trivia/presentation/trivia_widget.dart';
@@ -8,11 +14,62 @@ import '../domain/timer_provider.dart';
 import '../domain/timer_state.dart';
 import 'rubik_particle_background.dart';
 
-class TimerPage extends ConsumerWidget {
+class TimerPage extends ConsumerStatefulWidget {
   const TimerPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TimerPage> createState() => _TimerPageState();
+}
+
+class _TimerPageState extends ConsumerState<TimerPage> {
+  final GlobalKey _repaintBoundaryKey = GlobalKey();
+
+  Future<void> _shareResult(TimerState state) async {
+    try {
+      // 1. Capture Screenshot
+      final boundary =
+          _repaintBoundaryKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
+      if (boundary == null) {
+        return;
+      }
+
+      final image = await boundary.toImage(pixelRatio: 3);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      final pngBytes = byteData?.buffer.asUint8List();
+
+      if (pngBytes == null) {
+        return;
+      }
+
+      // 2. Save to temporary file
+      final tempDir = await getTemporaryDirectory();
+      final file = await File('${tempDir.path}/cube_timer_result.png').create();
+      await file.writeAsBytes(pngBytes);
+
+      // 3. Prepare Text
+      final timeText = _formatTime(state.elapsedMilliseconds);
+      final text = '記録は$timeTextでした。 #CubeTimer';
+
+      // 4. Share
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: text,
+        ),
+      );
+    } on Object catch (e) {
+      debugPrint('Share error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('シェアに失敗しました: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(timerControllerProvider);
     final theme = Theme.of(context);
 
@@ -44,186 +101,196 @@ class TimerPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          // 0. Global Background (Gorgeous Fixed + Rubik Particles)
-          Positioned.fill(
-            child: Stack(
-              children: [
-                // Base Gradient
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: RadialGradient(
-                      radius: 1.5,
-                      colors: [
-                        Colors.purple.shade900,
-                        Colors.black,
-                      ],
-                    ),
-                  ),
-                ),
-                // Rubik Particles
-                const Positioned.fill(
-                  child: RubikParticleBackground(),
-                ),
-              ],
-            ),
-          ),
-
-          // 1. Timer Interaction Layer
-          Positioned.fill(
-            child: Listener(
-              onPointerDown: (event) {
-                if (state.status == TimerStatus.stopped) {
-                  HapticFeedback.heavyImpact();
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('リセットボタンを押してリセットしてください'),
-                      duration: Duration(milliseconds: 1500),
-                    ),
-                  );
-                } else if (state.status == TimerStatus.idle) {
-                  HapticFeedback.lightImpact();
-                }
-                ref
-                    .read(timerControllerProvider.notifier)
-                    .handlePointerDown(event.pointer);
-              },
-              onPointerUp: (event) => ref
-                  .read(timerControllerProvider.notifier)
-                  .handlePointerUp(event.pointer),
-              onPointerCancel: (event) => ref
-                  .read(timerControllerProvider.notifier)
-                  .handlePointerUp(event.pointer),
-              behavior: HitTestBehavior.opaque,
+      body: RepaintBoundary(
+        key: _repaintBoundaryKey,
+        child: Stack(
+          children: [
+            // 0. Global Background (Gorgeous Fixed + Rubik Particles)
+            Positioned.fill(
               child: Stack(
                 children: [
-                  // Background Shape
-                  Positioned.fill(
-                    child: CustomPaint(
-                      painter: StackMatPainter(
-                        color: Colors.white.withValues(alpha: 0.1),
+                  // Base Gradient
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        radius: 1.5,
+                        colors: [
+                          Colors.purple.shade900,
+                          Colors.black,
+                        ],
                       ),
                     ),
                   ),
-
-                  // Hand Pads
-                  Positioned(
-                    bottom: 120,
-                    left: 40,
-                    child: _HandPad(color: _getPadColor(state.status)),
-                  ),
-                  Positioned(
-                    bottom: 120,
-                    right: 40,
-                    child: _HandPad(color: _getPadColor(state.status)),
+                  // Rubik Particles
+                  const Positioned.fill(
+                    child: RubikParticleBackground(),
                   ),
                 ],
               ),
             ),
-          ),
 
-          // 2. UI Overlay Layer
-          SafeArea(
-            child: Column(
-              children: [
-                // Scramble Section
-                Expanded(
-                  flex: 2,
-                  child: IgnorePointer(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      alignment: Alignment.center,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: AnimatedDefaultTextStyle(
-                          duration: const Duration(milliseconds: 300),
-                          style: theme.textTheme.headlineSmall!.copyWith(
-                            color: Colors.white70,
-                            shadows: [
-                              const BoxShadow(
-                                color: Colors.purpleAccent,
-                                blurRadius: 10,
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            state.scramble,
-                            textAlign: TextAlign.center,
-                          ),
+            // 1. Timer Interaction Layer
+            Positioned.fill(
+              child: Listener(
+                onPointerDown: (event) {
+                  if (state.status == TimerStatus.stopped) {
+                    // Do nothing here, wait for reset button
+                  } else if (state.status == TimerStatus.idle) {
+                    HapticFeedback.lightImpact();
+                  }
+
+                  // Only handle touch if NOT stopped
+                  if (state.status == TimerStatus.stopped) {
+                    // Show snackbar instruction
+                    HapticFeedback.heavyImpact();
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('リセットボタンを押してリセットしてください'),
+                        duration: Duration(milliseconds: 1500),
+                      ),
+                    );
+                  }
+
+                  ref
+                      .read(timerControllerProvider.notifier)
+                      .handlePointerDown(event.pointer);
+                },
+                onPointerUp: (event) => ref
+                    .read(timerControllerProvider.notifier)
+                    .handlePointerUp(event.pointer),
+                onPointerCancel: (event) => ref
+                    .read(timerControllerProvider.notifier)
+                    .handlePointerUp(event.pointer),
+                behavior: HitTestBehavior.opaque,
+                child: Stack(
+                  children: [
+                    // Background Shape
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: StackMatPainter(
+                          color: Colors.white.withValues(alpha: 0.1),
                         ),
                       ),
                     ),
-                  ),
-                ),
 
-                // Status Section
-                Expanded(
-                  child: IgnorePointer(
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 200),
-                          opacity: _getStatusOpacity(
-                            state.status,
-                            state.elapsedMilliseconds,
-                          ),
+                    // Hand Pads
+                    Positioned(
+                      bottom: 120,
+                      left: 40,
+                      child: _HandPad(color: _getPadColor(state.status)),
+                    ),
+                    Positioned(
+                      bottom: 120,
+                      right: 40,
+                      child: _HandPad(color: _getPadColor(state.status)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // 2. UI Overlay Layer
+            SafeArea(
+              child: Column(
+                children: [
+                  // Scramble Section
+                  Expanded(
+                    flex: 2,
+                    child: IgnorePointer(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        alignment: Alignment.center,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
                           child: AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 200),
-                            style: theme.textTheme.headlineMedium!.copyWith(
-                              color: _getStatusTextColor(state.status),
-                              fontWeight: FontWeight.bold,
+                            duration: const Duration(milliseconds: 300),
+                            style: theme.textTheme.headlineSmall!.copyWith(
+                              color: Colors.white70,
                               shadows: [
-                                BoxShadow(
-                                  color: _getStatusTextColor(
-                                    state.status,
-                                  ).withValues(alpha: 0.8),
-                                  blurRadius: 20,
+                                const BoxShadow(
+                                  color: Colors.purpleAccent,
+                                  blurRadius: 10,
                                 ),
                               ],
                             ),
-                            child: Text(_getStatusText(state.status)),
+                            child: Text(
+                              state.scramble,
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
 
-                // Timer Section (Maximized)
-                Expanded(
-                  flex: 5,
-                  child: IgnorePointer(
-                    child: Container(
-                      alignment: Alignment.center,
-                      // Use contain to maximize size within the expanded area
-                      child: FittedBox(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Hero(
-                            tag: 'timer_display',
+                  // Status Section
+                  Expanded(
+                    child: IgnorePointer(
+                      child: Container(
+                        alignment: Alignment.center,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 200),
+                            opacity: _getStatusOpacity(
+                              state.status,
+                              state.elapsedMilliseconds,
+                            ),
                             child: AnimatedDefaultTextStyle(
-                              duration: const Duration(milliseconds: 100),
-                              style: theme.textTheme.displayLarge!.copyWith(
-                                color: _getTimerDisplayColor(state.status),
-                                fontFeatures: [
-                                  const FontFeature.tabularFigures(),
-                                ],
+                              duration: const Duration(milliseconds: 200),
+                              style: theme.textTheme.headlineMedium!.copyWith(
+                                color: _getStatusTextColor(state.status),
+                                fontWeight: FontWeight.bold,
                                 shadows: [
                                   BoxShadow(
-                                    color: _getTimerDisplayColor(
+                                    color: _getStatusTextColor(
                                       state.status,
-                                    ).withValues(alpha: 0.6),
-                                    blurRadius: 30,
-                                    spreadRadius: 5,
+                                    ).withValues(alpha: 0.8),
+                                    blurRadius: 20,
                                   ),
                                 ],
                               ),
-                              child: Text(
-                                _formatTime(state.elapsedMilliseconds),
+                              child: Text(_getStatusText(state.status)),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Timer Section (Maximized)
+                  Expanded(
+                    flex: 5,
+                    child: IgnorePointer(
+                      child: Container(
+                        alignment: Alignment.center,
+                        // Use contain to maximize size within the expanded area
+                        child: FittedBox(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Hero(
+                              tag: 'timer_display',
+                              child: AnimatedDefaultTextStyle(
+                                duration: const Duration(milliseconds: 100),
+                                style: theme.textTheme.displayLarge!.copyWith(
+                                  color: _getTimerDisplayColor(state.status),
+                                  fontFeatures: [
+                                    const FontFeature.tabularFigures(),
+                                  ],
+                                  shadows: [
+                                    BoxShadow(
+                                      color: _getTimerDisplayColor(
+                                        state.status,
+                                      ).withValues(alpha: 0.6),
+                                      blurRadius: 30,
+                                      spreadRadius: 5,
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  _formatTime(state.elapsedMilliseconds),
+                                ),
                               ),
                             ),
                           ),
@@ -231,39 +298,59 @@ class TimerPage extends ConsumerWidget {
                       ),
                     ),
                   ),
-                ),
 
-                // Control Section (Fixed Height instead of Expanded)
-                // NO IgnorePointer here!
-                // Control Section (Fixed Height instead of Expanded)
-                // NO IgnorePointer here!
-                Container(
-                  alignment: Alignment.bottomCenter,
-                  padding: const EdgeInsets.only(bottom: 40),
-                  height:
-                      100, // Fixed height to ensure button is always accessible
-                  child:
-                      (state.status == TimerStatus.stopped ||
-                          (state.status == TimerStatus.idle &&
-                              state.elapsedMilliseconds > 0))
-                      ? IconButton(
-                          iconSize: 48,
-                          icon: const Icon(Icons.refresh),
-                          onPressed: () {
-                            ref.read(timerControllerProvider.notifier).reset();
-                          },
-                          color: Colors.white,
-                        )
-                      : const SizedBox.shrink(),
-                ),
+                  // Control Section (Fixed Height instead of Expanded)
+                  // NO IgnorePointer here!
+                  Container(
+                    alignment: Alignment.bottomCenter,
+                    padding: const EdgeInsets.only(bottom: 40),
+                    height:
+                        120, // Increased height to accommodate row if needed
+                    child:
+                        (state.status == TimerStatus.stopped ||
+                            (state.status == TimerStatus.idle &&
+                                state.elapsedMilliseconds > 0))
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Share Button (Only visible when stopped)
+                              if (state.status == TimerStatus.stopped) ...[
+                                IconButton(
+                                  iconSize: 32,
+                                  icon: const Icon(Icons.share),
+                                  onPressed: () => _shareResult(state),
+                                  color: Colors.white,
+                                  tooltip: 'Share Result',
+                                ),
+                                const SizedBox(width: 32),
+                              ],
 
-                // Trivia Widget (Visible only in Idle 0s state)
-                if (MediaQuery.sizeOf(context).height > 400)
-                  const TriviaWidget(),
-              ],
+                              // Reset Button
+                              IconButton(
+                                iconSize: 48,
+                                icon: const Icon(Icons.refresh),
+                                onPressed: () {
+                                  ref
+                                      .read(timerControllerProvider.notifier)
+                                      .reset();
+                                },
+                                color: Colors.white,
+                              ),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+
+                  // Trivia Widget (Visible only in Idle 0s state)
+                  if (MediaQuery.sizeOf(context).height > 400 &&
+                      state.status == TimerStatus.idle &&
+                      state.elapsedMilliseconds == 0)
+                    const TriviaWidget(),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
