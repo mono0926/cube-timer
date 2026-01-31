@@ -8,7 +8,7 @@ import 'package:timer/features/history/domain/history_provider.dart';
 import 'package:timer/features/timer/presentation/timer_page.dart';
 
 // --- Test Ticker Service (Simpler version for Widget Test) ---
-class WidgetTestTickerService implements ITickerService {
+class WidgetTestTickerService implements TickerService {
   int _elapsedMilliseconds = 0;
   void Function()? _periodicCallback;
   void Function()? _oneShotCallback;

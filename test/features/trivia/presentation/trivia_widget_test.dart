@@ -34,7 +34,7 @@ class FakeTriviaRepository implements TriviaRepository {
   }
 }
 
-class WidgetTestTickerService implements ITickerService {
+class WidgetTestTickerService implements TickerService {
   int _elapsedMilliseconds = 0;
   void Function()? _periodicCallback;
   void Function()? _oneShotCallback;

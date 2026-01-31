@@ -113,7 +113,8 @@ class HistoryPage extends ConsumerWidget {
                       builder: (context) => AlertDialog(
                         title: const Text('Delete this solve?'),
                         content: Text(
-                          'Time: ${_formatTime(item.durationMilliseconds)}\n${item.scramble}',
+                          'Time: ${_formatTime(item.durationMilliseconds)}\n'
+                          '${item.scramble}',
                         ),
                         actions: [
                           TextButton(

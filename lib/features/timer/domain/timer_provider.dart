@@ -16,7 +16,7 @@ class TimerController extends _$TimerController {
   final Set<int> _pointers = {};
   static const _holdDuration = Duration(milliseconds: 300);
 
-  ITickerService get _tickerService => ref.read(tickerServiceProvider);
+  TickerService get _tickerService => ref.read(tickerServiceProvider);
 
   @override
   TimerState build() {

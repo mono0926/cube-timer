@@ -90,7 +90,7 @@ class _TriviaWidgetState extends ConsumerState<TriviaWidget> {
                       onTap: _fetchNewTrivia,
                       borderRadius: BorderRadius.circular(12),
                       overlayColor: WidgetStateProperty.all(
-                        Colors.cyanAccent.withOpacity(0.1),
+                        Colors.cyanAccent.withValues(alpha: 0.1),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(12),
@@ -99,12 +99,12 @@ class _TriviaWidgetState extends ConsumerState<TriviaWidget> {
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                                 height: 1.4,
                                 shadows: [
                                   BoxShadow(
-                                    color: Colors.purple.withOpacity(
-                                      0.5,
+                                    color: Colors.purple.withValues(
+                                      alpha: 0.5,
                                     ),
                                     blurRadius: 10,
                                   ),

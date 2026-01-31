@@ -8,7 +8,7 @@ import 'package:timer/features/timer/domain/timer_provider.dart';
 import 'package:timer/features/timer/domain/timer_state.dart';
 
 // --- Test Ticker Service ---
-class TestTickerService implements ITickerService {
+class TestTickerService implements TickerService {
   int _elapsedMilliseconds = 0;
   void Function()? _periodicCallback;
   void Function()? _oneShotCallback;
@@ -274,10 +274,10 @@ void main() {
     });
 
     test('Cannot start holding from Stopped state (Requires Reset)', () {
-      final controller = container.read(timerControllerProvider.notifier);
+      final controller = container.read(timerControllerProvider.notifier)
+        ..handlePointerDown(1);
 
       // 1. Start -> Stop (Stopped state)
-      controller.handlePointerDown(1);
       tickerService.advance(const Duration(milliseconds: 300)); // Ready
       controller.handlePointerUp(1); // Start
       tickerService.advance(const Duration(seconds: 1));
