@@ -144,7 +144,7 @@ void main() {
         await tester.tapAt(center);
         await tester.pump();
 
-        expect(find.text('ストップ'), findsOneWidget);
+        expect(find.text('結果'), findsOneWidget);
 
         // 6. Reset
         final resetButton = find.byIcon(Icons.refresh);
@@ -217,7 +217,7 @@ void main() {
       // But text string changed to 'スタート'.
       await tester.tap(find.text('スタート'), warnIfMissed: false);
       await tester.pump();
-      expect(find.text('ストップ'), findsOneWidget);
+      expect(find.text('結果'), findsOneWidget);
 
       // Reset
       final resetButton = find.byIcon(Icons.refresh);

@@ -28,8 +28,8 @@
 | **Idle**     | "ホールドしてスタート" | Default (白/黒) / Grey | 初期状態。画面ホールドで `Holding` へ遷移。                                | -           | Light Impact  |
 | **Holding**  | "そのまま..."          | Red                    | 指を置いている間。0.3秒経過で `Ready` へ遷移。途中で離すと `Idle` へ戻る。 | -           | -             |
 | **Ready**    | "よーい"               | Green                  | 計測準備完了。指を離した瞬間に `Running` へ遷移。                          | `ready.mp3` | Medium Impact |
-| **Running**  | "スタート"             | Default (Glow)         | 計測中。画面タップで `Stopped` へ遷移。                                    | `start.mp3` | Heavy Impact  |
-| **Stopped**  | "ストップ"             | Default                | 計測終了。リセットボタンで `Idle` へ戻る。                                 | `stop.mp3`  | Heavy Impact  |
+| **Running**  | "スタート"             | Default (Glow)         | 計測中。開始後フェードアウト。画面タップで `Stopped` へ遷移。              | `start.mp3` | Heavy Impact  |
+| **Stopped**  | "結果"                 | Default                | 計測終了。リセットボタンで `Idle` へ戻る。                                 | `stop.mp3`  | Heavy Impact  |
 
 #### 1.2 **入力制御 (Multi-touch)**
 

@@ -165,21 +165,28 @@ class TimerPage extends ConsumerWidget {
                       alignment: Alignment.center,
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
-                        child: AnimatedDefaultTextStyle(
+                        child: AnimatedOpacity(
                           duration: const Duration(milliseconds: 200),
-                          style: theme.textTheme.headlineMedium!.copyWith(
-                            color: _getStatusColor(state.status),
-                            fontWeight: FontWeight.bold,
-                            shadows: [
-                              BoxShadow(
-                                color: _getStatusColor(
-                                  state.status,
-                                ).withValues(alpha: 0.8),
-                                blurRadius: 20,
-                              ),
-                            ],
+                          opacity: _getStatusOpacity(
+                            state.status,
+                            state.elapsedMilliseconds,
                           ),
-                          child: Text(_getStatusText(state.status)),
+                          child: AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 200),
+                            style: theme.textTheme.headlineMedium!.copyWith(
+                              color: _getStatusTextColor(state.status),
+                              fontWeight: FontWeight.bold,
+                              shadows: [
+                                BoxShadow(
+                                  color: _getStatusTextColor(
+                                    state.status,
+                                  ).withValues(alpha: 0.8),
+                                  blurRadius: 20,
+                                ),
+                              ],
+                            ),
+                            child: Text(_getStatusText(state.status)),
+                          ),
                         ),
                       ),
                     ),
@@ -201,13 +208,13 @@ class TimerPage extends ConsumerWidget {
                             child: AnimatedDefaultTextStyle(
                               duration: const Duration(milliseconds: 100),
                               style: theme.textTheme.displayLarge!.copyWith(
-                                color: _getStatusColor(state.status),
+                                color: _getTimerDisplayColor(state.status),
                                 fontFeatures: [
                                   const FontFeature.tabularFigures(),
                                 ],
                                 shadows: [
                                   BoxShadow(
-                                    color: _getStatusColor(
+                                    color: _getTimerDisplayColor(
                                       state.status,
                                     ).withValues(alpha: 0.6),
                                     blurRadius: 30,
@@ -287,11 +294,33 @@ class TimerPage extends ConsumerWidget {
       case TimerStatus.running:
         return 'スタート';
       case TimerStatus.stopped:
-        return 'ストップ';
+        return '結果';
     }
   }
 
-  Color _getStatusColor(TimerStatus status) {
+  double _getStatusOpacity(TimerStatus status, [int elapsedMilliseconds = 0]) {
+    if (status == TimerStatus.running && elapsedMilliseconds > 500) {
+      return 0;
+    }
+    return 1;
+  }
+
+  Color _getStatusTextColor(TimerStatus status) {
+    switch (status) {
+      case TimerStatus.idle:
+        return Colors.cyanAccent;
+      case TimerStatus.holding:
+        return Colors.orangeAccent;
+      case TimerStatus.ready:
+        return Colors.greenAccent;
+      case TimerStatus.running:
+        return Colors.white;
+      case TimerStatus.stopped:
+        return Colors.white70;
+    }
+  }
+
+  Color _getTimerDisplayColor(TimerStatus status) {
     switch (status) {
       case TimerStatus.idle:
         return Colors.cyanAccent;
