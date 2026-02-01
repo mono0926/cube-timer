@@ -10,9 +10,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timer/app.dart';
 import 'package:timer/features/history/data/history_repository.dart';
+import 'package:timer/i18n/strings.g.dart';
 
 void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
+    LocaleSettings.setLocaleSync(AppLocale.ja);
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
@@ -21,7 +23,7 @@ void main() {
         overrides: [
           historyRepositoryProvider.overrideWithValue(HistoryRepository(prefs)),
         ],
-        child: const App(),
+        child: TranslationProvider(child: const App()),
       ),
     );
 

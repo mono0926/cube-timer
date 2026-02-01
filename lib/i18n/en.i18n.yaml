@@ -1,0 +1,41 @@
+appName: Cube Timer
+cancel: Cancel
+delete: Delete
+clear: Clear
+save: Save
+ok: OK
+
+status:
+  idle: Hold to start
+  holding: Holding...
+  ready: Ready
+  running: Go!
+  started: Go!
+  stopped: Result
+
+messages:
+  resetInstruction: Press reset button to reset
+  shareFailed: Share failed
+
+history:
+  title: History
+  noSolves: No solves yet
+  deleteConfirm:
+    title: Delete this solve?
+    content: This action cannot be undone.
+  clearConfirm:
+    title: Clear History?
+  menu:
+    showResult: Show Result
+    showResultDesc: Return to timer and show this solve
+    editComment: Edit Comment
+  dialog:
+    editComment:
+      title: Edit Comment
+      hint: Enter comment
+
+trivia:
+  didYouKnow: Did you know?
+
+timer:
+  reset: Reset

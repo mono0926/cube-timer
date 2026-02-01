@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../i18n/strings.g.dart';
 import '../../history/domain/history_item.dart';
 import '../../history/domain/history_provider.dart';
 import '../../timer/domain/timer_provider.dart';
@@ -30,7 +31,7 @@ class HistoryPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('履歴'),
+        title: Text(t.history.title),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline),
@@ -38,17 +39,17 @@ class HistoryPage extends ConsumerWidget {
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('履歴を削除しますか？'),
-                  content: const Text('この操作は取り消せません。'),
+                  title: Text(t.history.clearConfirm.title),
+                  content: Text(t.history.deleteConfirm.content),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
-                      child: const Text('キャンセル'),
+                      child: Text(t.cancel),
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(context, true),
                       child: Text(
-                        '削除',
+                        t.clear,
                         style: TextStyle(color: theme.colorScheme.error),
                       ),
                     ),
@@ -75,11 +76,12 @@ class HistoryPage extends ConsumerWidget {
                     size: 64,
                     color: theme.colorScheme.outline.withValues(alpha: 0.5),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'まだ履歴がありません',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.outline,
+                  Center(
+                    child: Text(
+                      t.history.noSolves,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
                     ),
                   ),
                 ],
@@ -119,8 +121,8 @@ class HistoryPage extends ConsumerWidget {
                             children: [
                               ListTile(
                                 leading: const Icon(Icons.timer_outlined),
-                                title: const Text('結果を表示'),
-                                subtitle: const Text('タイマー画面に戻りこの記録を表示します'),
+                                title: Text(t.history.menu.showResult),
+                                subtitle: Text(t.history.menu.showResultDesc),
                                 onTap: () {
                                   Navigator.pop(context);
                                   ref
@@ -133,7 +135,7 @@ class HistoryPage extends ConsumerWidget {
                               ),
                               ListTile(
                                 leading: const Icon(Icons.comment_outlined),
-                                title: const Text('コメントを編集'),
+                                title: Text(t.history.menu.editComment),
                                 onTap: () {
                                   Navigator.pop(context);
                                   _showEditCommentDialog(context, ref, item);
@@ -149,20 +151,20 @@ class HistoryPage extends ConsumerWidget {
                     final confirm = await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text('この記録を削除しますか？'),
+                        title: Text(t.history.deleteConfirm.title),
                         content: Text(
-                          'タイム: ${_formatTime(item.durationMilliseconds)}\n'
+                          'Time: ${_formatTime(item.durationMilliseconds)}\n'
                           '${item.scramble}',
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context, false),
-                            child: const Text('キャンセル'),
+                            child: Text(t.cancel),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(context, true),
                             child: Text(
-                              '削除',
+                              t.delete,
                               style: TextStyle(color: theme.colorScheme.error),
                             ),
                           ),
@@ -230,12 +232,12 @@ class HistoryPage extends ConsumerWidget {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('コメントを編集'),
+        title: Text(t.history.dialog.editComment.title),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            hintText: 'コメントを入力',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            hintText: t.history.dialog.editComment.hint,
+            border: const OutlineInputBorder(),
           ),
           autofocus: true,
           maxLines: 3,
@@ -243,11 +245,11 @@ class HistoryPage extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('キャンセル'),
+            child: Text(t.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('保存'),
+            child: Text(t.save),
           ),
         ],
       ),

@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/router/app_router.dart';
+import '../../../i18n/strings.g.dart';
 import '../../trivia/presentation/trivia_widget.dart';
 import '../domain/timer_provider.dart';
 import '../domain/timer_state.dart';
@@ -62,7 +63,7 @@ class _TimerPageState extends ConsumerState<TimerPage> {
       debugPrint('Share error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('シェアに失敗しました: $e')),
+          SnackBar(content: Text('${t.messages.shareFailed}: $e')),
         );
       }
     }
@@ -145,9 +146,9 @@ class _TimerPageState extends ConsumerState<TimerPage> {
                     HapticFeedback.heavyImpact();
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('リセットボタンを押してリセットしてください'),
-                        duration: Duration(milliseconds: 1500),
+                      SnackBar(
+                        content: Text(t.messages.resetInstruction),
+                        duration: const Duration(milliseconds: 1500),
                       ),
                     );
                   }
@@ -371,15 +372,15 @@ class _TimerPageState extends ConsumerState<TimerPage> {
   String _getStatusText(TimerStatus status) {
     switch (status) {
       case TimerStatus.idle:
-        return 'ホールドしてスタート';
+        return t.status.idle;
       case TimerStatus.holding:
-        return 'そのまま...';
+        return t.status.holding;
       case TimerStatus.ready:
-        return 'よーい';
+        return t.status.ready;
       case TimerStatus.running:
-        return 'スタート';
+        return t.status.running;
       case TimerStatus.stopped:
-        return '結果';
+        return t.status.stopped;
     }
   }
 

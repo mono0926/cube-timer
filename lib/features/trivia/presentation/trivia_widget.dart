@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../i18n/strings.g.dart';
 import '../../timer/domain/timer_provider.dart';
 import '../../timer/domain/timer_state.dart';
 import '../domain/trivia_item.dart';
@@ -94,22 +95,36 @@ class _TriviaWidgetState extends ConsumerState<TriviaWidget> {
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(12),
-                        child: Text(
-                          _currentItem!.content,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyLarge!
-                              .copyWith(
-                                color: Colors.white.withValues(alpha: 0.9),
-                                height: 1.4,
-                                shadows: [
-                                  BoxShadow(
-                                    color: Colors.purple.withValues(
-                                      alpha: 0.5,
-                                    ),
-                                    blurRadius: 10,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              t.trivia.didYouKnow,
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: Colors.cyanAccent,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                ],
-                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _currentItem!.content,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    height: 1.4,
+                                    shadows: [
+                                      BoxShadow(
+                                        color: Colors.purple.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        blurRadius: 10,
+                                      ),
+                                    ],
+                                  ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

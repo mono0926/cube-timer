@@ -1,0 +1,41 @@
+appName: キューブタイマー
+cancel: キャンセル
+delete: 削除
+clear: 削除
+save: 保存
+ok: OK
+
+status:
+  idle: ホールドしてスタート
+  holding: そのまま...
+  ready: よーい
+  running: スタート
+  started: スタート
+  stopped: 結果
+
+messages:
+  resetInstruction: リセットボタンを押してリセットしてください
+  shareFailed: シェアに失敗しました
+
+history:
+  title: 履歴
+  noSolves: まだ履歴がありません
+  deleteConfirm:
+    title: 履歴を削除しますか？
+    content: この操作は取り消せません。
+  clearConfirm:
+    title: 履歴を削除しますか？
+  menu:
+    showResult: 結果を表示
+    showResultDesc: タイマー画面に戻りこの記録を表示します
+    editComment: コメントを編集
+  dialog:
+    editComment:
+      title: コメントを編集
+      hint: コメントを入力
+
+trivia:
+  didYouKnow: 豆知識
+
+timer:
+  reset: リセット

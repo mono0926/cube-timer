@@ -6,6 +6,7 @@ import 'package:timer/features/history/domain/history_provider.dart';
 import 'package:timer/features/history/presentation/history_page.dart';
 import 'package:timer/features/timer/domain/timer_provider.dart';
 import 'package:timer/features/timer/domain/timer_state.dart';
+import 'package:timer/i18n/strings.g.dart';
 
 class FakeHistory extends AutoDisposeAsyncNotifier<List<HistoryItem>>
     implements History {
@@ -48,6 +49,10 @@ class FakeHistory extends AutoDisposeAsyncNotifier<List<HistoryItem>>
 
 void main() {
   group('HistoryPage', () {
+    setUp(() {
+      LocaleSettings.setLocaleSync(AppLocale.ja);
+    });
+
     testWidgets('Edit comment', (tester) async {
       final fakeHistory = FakeHistory()
         ..items = [

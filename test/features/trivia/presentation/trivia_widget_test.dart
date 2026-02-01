@@ -7,7 +7,8 @@ import 'package:timer/features/history/domain/history_provider.dart';
 import 'package:timer/features/timer/presentation/timer_page.dart';
 import 'package:timer/features/trivia/domain/trivia_item.dart';
 import 'package:timer/features/trivia/domain/trivia_repository.dart';
-import 'package:timer/features/trivia/presentation/trivia_widget.dart'; // Added Import
+import 'package:timer/features/trivia/presentation/trivia_widget.dart';
+import 'package:timer/i18n/strings.g.dart';
 
 // --- Fakes ---
 class FakeHistoryController extends AutoDisposeAsyncNotifier<List<HistoryItem>>
@@ -81,6 +82,7 @@ void main() {
 
   setUp(() {
     tickerService = WidgetTestTickerService();
+    LocaleSettings.setLocaleSync(AppLocale.ja);
   });
 
   Future<void> pumpTimerPage(WidgetTester tester) async {
@@ -109,8 +111,8 @@ void main() {
 
     // Verify content visible
     expect(find.text('Mock Trivia 1'), findsOneWidget);
-    // "DID YOU KNOW" should be gone
-    expect(find.text('DID YOU KNOW?'), findsNothing);
+    // "DID YOU KNOW" (豆知識) should be visible now
+    expect(find.text('豆知識'), findsOneWidget);
 
     // 2. Start Timer: Idle -> Holding -> Ready -> Running
     // We need center for gestures

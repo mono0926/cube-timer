@@ -6,6 +6,7 @@ import 'package:timer/core/utils/ticker_service.dart';
 import 'package:timer/features/history/domain/history_item.dart';
 import 'package:timer/features/history/domain/history_provider.dart';
 import 'package:timer/features/timer/presentation/timer_page.dart';
+import 'package:timer/i18n/strings.g.dart';
 
 // --- Test Ticker Service (Simpler version for Widget Test) ---
 class WidgetTestTickerService implements TickerService {
@@ -81,6 +82,7 @@ void main() {
 
   setUp(() {
     tickerService = WidgetTestTickerService();
+    LocaleSettings.setLocaleSync(AppLocale.ja);
   });
 
   Future<void> pumpTimerPage(WidgetTester tester) async {

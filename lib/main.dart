@@ -4,17 +4,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'features/history/data/history_repository.dart';
+import 'i18n/strings.g.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
 
   runApp(
-    ProviderScope(
-      overrides: [
-        historyRepositoryProvider.overrideWithValue(HistoryRepository(prefs)),
-      ],
-      child: const App(),
+    TranslationProvider(
+      child: ProviderScope(
+        overrides: [
+          historyRepositoryProvider.overrideWithValue(HistoryRepository(prefs)),
+        ],
+        child: const App(),
+      ),
     ),
   );
 }
