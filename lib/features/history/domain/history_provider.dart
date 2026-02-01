@@ -27,6 +27,13 @@ class History extends _$History {
     state = AsyncValue.data(repository.fetchItems());
   }
 
+  Future<void> updateComment(HistoryItem item, String? comment) async {
+    final repository = ref.read(historyRepositoryProvider);
+    final updatedItem = item.copyWith(comment: comment);
+    await repository.updateItem(updatedItem);
+    state = AsyncValue.data(repository.fetchItems());
+  }
+
   Future<void> delete(HistoryItem item) async {
     final repository = ref.read(historyRepositoryProvider);
     await repository.deleteItem(item);

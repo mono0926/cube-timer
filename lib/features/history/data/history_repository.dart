@@ -37,6 +37,16 @@ class HistoryRepository {
     await _prefs.setStringList(_key, jsonList);
   }
 
+  Future<void> updateItem(HistoryItem item) async {
+    final items = fetchItems();
+    final index = items.indexWhere((e) => e.id == item.id);
+    if (index != -1) {
+      items[index] = item;
+      final jsonList = items.map((e) => jsonEncode(e.toJson())).toList();
+      await _prefs.setStringList(_key, jsonList);
+    }
+  }
+
   Future<void> clear() async {
     await _prefs.remove(_key);
   }

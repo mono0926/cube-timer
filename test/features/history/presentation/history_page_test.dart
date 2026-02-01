@@ -35,10 +35,70 @@ class FakeHistory extends AutoDisposeAsyncNotifier<List<HistoryItem>>
     items = items.where((element) => element.id != item.id).toList();
     state = AsyncValue.data(items);
   }
+
+  @override
+  Future<void> updateComment(HistoryItem item, String? comment) async {
+    final index = items.indexWhere((e) => e.id == item.id);
+    if (index != -1) {
+      items[index] = items[index].copyWith(comment: comment);
+      state = AsyncValue.data(items);
+    }
+  }
 }
 
 void main() {
   group('HistoryPage', () {
+    testWidgets('Edit comment', (tester) async {
+      final fakeHistory = FakeHistory()
+        ..items = [
+          HistoryItem(
+            id: 1,
+            scramble: 'S',
+            durationMilliseconds: 1000,
+            timestamp: DateTime.now(),
+          ),
+        ];
+
+      final fakeTimerController = FakeTimerController();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            historyProvider.overrideWith(() => fakeHistory),
+            timerControllerProvider.overrideWith(() => fakeTimerController),
+          ],
+          child: const MaterialApp(home: HistoryPage()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Tap item
+      await tester.tap(find.text('S'));
+      await tester.pumpAndSettle();
+
+      // Action Sheet should appear
+      expect(find.text('結果を表示'), findsOneWidget);
+      final editComment = find.text('コメントを編集');
+      expect(editComment, findsOneWidget);
+
+      // Select 'Edit Comment'
+      await tester.tap(editComment);
+      await tester.pumpAndSettle();
+
+      // Dialog should appear
+      expect(find.text('コメントを編集'), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
+
+      // Enter comment
+      await tester.enterText(find.byType(TextField), 'My best solve');
+      await tester.tap(find.text('保存'));
+      await tester.pumpAndSettle();
+
+      // Verify comment is updated
+      expect(fakeHistory.items.first.comment, 'My best solve');
+      expect(find.text('My best solve'), findsOneWidget);
+    });
+
     testWidgets('Empty state', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
@@ -67,6 +127,7 @@ void main() {
             scramble: 'F F',
             durationMilliseconds: 10000,
             timestamp: DateTime(2023, 1, 2),
+            comment: 'Nice',
           ),
         ];
 
@@ -87,6 +148,8 @@ void main() {
 
       // 10000ms -> 10.00
       expect(find.text('10.000'), findsOneWidget);
+      // Comment should be displayed
+      expect(find.text('Nice'), findsOneWidget);
     });
 
     testWidgets('Clear button', (tester) async {
@@ -130,6 +193,7 @@ void main() {
       // Should handle clear (FakeHistory clears state)
       expect(find.text('まだ履歴がありません'), findsOneWidget);
     });
+
     testWidgets('Tap to show result', (tester) async {
       final fakeHistory = FakeHistory()
         ..items = [
@@ -161,14 +225,12 @@ void main() {
       await tester.tap(listItem);
       await tester.pumpAndSettle();
 
-      // Dialog should appear
-      expect(find.text('この記録を表示しますか？'), findsOneWidget);
-      expect(find.text('キャンセル'), findsOneWidget);
-      final okButton = find.text('OK');
-      expect(okButton, findsOneWidget);
+      // Action Sheet should appear
+      expect(find.text('結果を表示'), findsOneWidget);
+      final showResult = find.text('結果を表示');
 
-      // Confirm
-      await tester.tap(okButton);
+      // Select 'Show Result'
+      await tester.tap(showResult);
       await tester.pumpAndSettle();
 
       // Verify showHistoryResult was called

@@ -10,6 +10,7 @@ abstract class HistoryItem with _$HistoryItem {
     required String scramble,
     required int durationMilliseconds,
     required DateTime timestamp,
+    String? comment,
   }) = _HistoryItem;
 
   factory HistoryItem.fromJson(Map<String, dynamic> json) =>

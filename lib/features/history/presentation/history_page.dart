@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../history/domain/history_item.dart';
 import '../../history/domain/history_provider.dart';
 import '../../timer/domain/timer_provider.dart';
 
@@ -108,35 +109,41 @@ class HistoryPage extends ConsumerWidget {
                   ref.read(historyProvider.notifier).delete(item);
                 },
                 child: ListTile(
-                  onTap: () async {
-                    final confirm = await showDialog<bool>(
+                  onTap: () {
+                    showModalBottomSheet<void>(
                       context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('この記録を表示しますか？'),
-                        content: const Text(
-                          'タイマー画面に戻り、この記録の結果画面を表示します。',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('キャンセル'),
+                      builder: (context) {
+                        return SafeArea(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                leading: const Icon(Icons.timer_outlined),
+                                title: const Text('結果を表示'),
+                                subtitle: const Text('タイマー画面に戻りこの記録を表示します'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  ref
+                                      .read(timerControllerProvider.notifier)
+                                      .showHistoryResult(item);
+                                  if (context.mounted) {
+                                    Navigator.pop(context);
+                                  }
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.comment_outlined),
+                                title: const Text('コメントを編集'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  _showEditCommentDialog(context, ref, item);
+                                },
+                              ),
+                            ],
                           ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: const Text('OK'),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     );
-
-                    if (confirm == true) {
-                      ref
-                          .read(timerControllerProvider.notifier)
-                          .showHistoryResult(item);
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                      }
-                    }
                   },
                   onLongPress: () async {
                     final confirm = await showDialog<bool>(
@@ -180,6 +187,17 @@ class HistoryPage extends ConsumerWidget {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (item.comment != null && item.comment!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text(
+                            item.comment!,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       Text(
                         item.scramble,
                         style: theme.textTheme.bodySmall?.copyWith(
@@ -201,5 +219,44 @@ class HistoryPage extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
       ),
     );
+  }
+
+  Future<void> _showEditCommentDialog(
+    BuildContext context,
+    WidgetRef ref,
+    HistoryItem item,
+  ) async {
+    final controller = TextEditingController(text: item.comment);
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('コメントを編集'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'コメントを入力',
+            border: OutlineInputBorder(),
+          ),
+          autofocus: true,
+          maxLines: 3,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await ref
+          .read(historyProvider.notifier)
+          .updateComment(item, controller.text);
+    }
   }
 }

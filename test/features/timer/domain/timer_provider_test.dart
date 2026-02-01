@@ -112,6 +112,9 @@ class FakeHistoryController extends AutoDisposeAsyncNotifier<List<HistoryItem>>
 
   @override
   Future<void> delete(HistoryItem item) async {}
+
+  @override
+  Future<void> updateComment(HistoryItem item, String? comment) async {}
 }
 
 void main() {

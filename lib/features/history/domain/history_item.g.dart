@@ -11,6 +11,7 @@ _HistoryItem _$HistoryItemFromJson(Map<String, dynamic> json) => _HistoryItem(
   scramble: json['scramble'] as String,
   durationMilliseconds: (json['durationMilliseconds'] as num).toInt(),
   timestamp: DateTime.parse(json['timestamp'] as String),
+  comment: json['comment'] as String?,
 );
 
 Map<String, dynamic> _$HistoryItemToJson(_HistoryItem instance) =>
@@ -19,4 +20,5 @@ Map<String, dynamic> _$HistoryItemToJson(_HistoryItem instance) =>
       'scramble': instance.scramble,
       'durationMilliseconds': instance.durationMilliseconds,
       'timestamp': instance.timestamp.toIso8601String(),
+      'comment': instance.comment,
     };

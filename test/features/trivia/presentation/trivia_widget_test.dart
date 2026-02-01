@@ -20,6 +20,8 @@ class FakeHistoryController extends AutoDisposeAsyncNotifier<List<HistoryItem>>
   Future<void> clear() async {}
   @override
   Future<void> delete(HistoryItem item) async {}
+  @override
+  Future<void> updateComment(HistoryItem item, String? comment) async {}
 }
 
 class FakeTriviaRepository implements TriviaRepository {

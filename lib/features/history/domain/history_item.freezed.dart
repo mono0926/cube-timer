@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$HistoryItem {
 
- int get id; String get scramble; int get durationMilliseconds; DateTime get timestamp;
+ int get id; String get scramble; int get durationMilliseconds; DateTime get timestamp; String? get comment;
 /// Create a copy of HistoryItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $HistoryItemCopyWith<HistoryItem> get copyWith => _$HistoryItemCopyWithImpl<Hist
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HistoryItem&&(identical(other.id, id) || other.id == id)&&(identical(other.scramble, scramble) || other.scramble == scramble)&&(identical(other.durationMilliseconds, durationMilliseconds) || other.durationMilliseconds == durationMilliseconds)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HistoryItem&&(identical(other.id, id) || other.id == id)&&(identical(other.scramble, scramble) || other.scramble == scramble)&&(identical(other.durationMilliseconds, durationMilliseconds) || other.durationMilliseconds == durationMilliseconds)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.comment, comment) || other.comment == comment));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,scramble,durationMilliseconds,timestamp);
+int get hashCode => Object.hash(runtimeType,id,scramble,durationMilliseconds,timestamp,comment);
 
 @override
 String toString() {
-  return 'HistoryItem(id: $id, scramble: $scramble, durationMilliseconds: $durationMilliseconds, timestamp: $timestamp)';
+  return 'HistoryItem(id: $id, scramble: $scramble, durationMilliseconds: $durationMilliseconds, timestamp: $timestamp, comment: $comment)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $HistoryItemCopyWith<$Res>  {
   factory $HistoryItemCopyWith(HistoryItem value, $Res Function(HistoryItem) _then) = _$HistoryItemCopyWithImpl;
 @useResult
 $Res call({
- int id, String scramble, int durationMilliseconds, DateTime timestamp
+ int id, String scramble, int durationMilliseconds, DateTime timestamp, String? comment
 });
 
 
@@ -65,13 +65,14 @@ class _$HistoryItemCopyWithImpl<$Res>
 
 /// Create a copy of HistoryItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? scramble = null,Object? durationMilliseconds = null,Object? timestamp = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? scramble = null,Object? durationMilliseconds = null,Object? timestamp = null,Object? comment = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,scramble: null == scramble ? _self.scramble : scramble // ignore: cast_nullable_to_non_nullable
 as String,durationMilliseconds: null == durationMilliseconds ? _self.durationMilliseconds : durationMilliseconds // ignore: cast_nullable_to_non_nullable
 as int,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,comment: freezed == comment ? _self.comment : comment // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -156,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String scramble,  int durationMilliseconds,  DateTime timestamp)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String scramble,  int durationMilliseconds,  DateTime timestamp,  String? comment)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HistoryItem() when $default != null:
-return $default(_that.id,_that.scramble,_that.durationMilliseconds,_that.timestamp);case _:
+return $default(_that.id,_that.scramble,_that.durationMilliseconds,_that.timestamp,_that.comment);case _:
   return orElse();
 
 }
@@ -177,10 +178,10 @@ return $default(_that.id,_that.scramble,_that.durationMilliseconds,_that.timesta
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String scramble,  int durationMilliseconds,  DateTime timestamp)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String scramble,  int durationMilliseconds,  DateTime timestamp,  String? comment)  $default,) {final _that = this;
 switch (_that) {
 case _HistoryItem():
-return $default(_that.id,_that.scramble,_that.durationMilliseconds,_that.timestamp);case _:
+return $default(_that.id,_that.scramble,_that.durationMilliseconds,_that.timestamp,_that.comment);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -197,10 +198,10 @@ return $default(_that.id,_that.scramble,_that.durationMilliseconds,_that.timesta
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String scramble,  int durationMilliseconds,  DateTime timestamp)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String scramble,  int durationMilliseconds,  DateTime timestamp,  String? comment)?  $default,) {final _that = this;
 switch (_that) {
 case _HistoryItem() when $default != null:
-return $default(_that.id,_that.scramble,_that.durationMilliseconds,_that.timestamp);case _:
+return $default(_that.id,_that.scramble,_that.durationMilliseconds,_that.timestamp,_that.comment);case _:
   return null;
 
 }
@@ -212,13 +213,14 @@ return $default(_that.id,_that.scramble,_that.durationMilliseconds,_that.timesta
 @JsonSerializable()
 
 class _HistoryItem implements HistoryItem {
-  const _HistoryItem({required this.id, required this.scramble, required this.durationMilliseconds, required this.timestamp});
+  const _HistoryItem({required this.id, required this.scramble, required this.durationMilliseconds, required this.timestamp, this.comment});
   factory _HistoryItem.fromJson(Map<String, dynamic> json) => _$HistoryItemFromJson(json);
 
 @override final  int id;
 @override final  String scramble;
 @override final  int durationMilliseconds;
 @override final  DateTime timestamp;
+@override final  String? comment;
 
 /// Create a copy of HistoryItem
 /// with the given fields replaced by the non-null parameter values.
@@ -233,16 +235,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HistoryItem&&(identical(other.id, id) || other.id == id)&&(identical(other.scramble, scramble) || other.scramble == scramble)&&(identical(other.durationMilliseconds, durationMilliseconds) || other.durationMilliseconds == durationMilliseconds)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HistoryItem&&(identical(other.id, id) || other.id == id)&&(identical(other.scramble, scramble) || other.scramble == scramble)&&(identical(other.durationMilliseconds, durationMilliseconds) || other.durationMilliseconds == durationMilliseconds)&&(identical(other.timestamp, timestamp) || other.timestamp == timestamp)&&(identical(other.comment, comment) || other.comment == comment));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,scramble,durationMilliseconds,timestamp);
+int get hashCode => Object.hash(runtimeType,id,scramble,durationMilliseconds,timestamp,comment);
 
 @override
 String toString() {
-  return 'HistoryItem(id: $id, scramble: $scramble, durationMilliseconds: $durationMilliseconds, timestamp: $timestamp)';
+  return 'HistoryItem(id: $id, scramble: $scramble, durationMilliseconds: $durationMilliseconds, timestamp: $timestamp, comment: $comment)';
 }
 
 
@@ -253,7 +255,7 @@ abstract mixin class _$HistoryItemCopyWith<$Res> implements $HistoryItemCopyWith
   factory _$HistoryItemCopyWith(_HistoryItem value, $Res Function(_HistoryItem) _then) = __$HistoryItemCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String scramble, int durationMilliseconds, DateTime timestamp
+ int id, String scramble, int durationMilliseconds, DateTime timestamp, String? comment
 });
 
 
@@ -270,13 +272,14 @@ class __$HistoryItemCopyWithImpl<$Res>
 
 /// Create a copy of HistoryItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? scramble = null,Object? durationMilliseconds = null,Object? timestamp = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? scramble = null,Object? durationMilliseconds = null,Object? timestamp = null,Object? comment = freezed,}) {
   return _then(_HistoryItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,scramble: null == scramble ? _self.scramble : scramble // ignore: cast_nullable_to_non_nullable
 as String,durationMilliseconds: null == durationMilliseconds ? _self.durationMilliseconds : durationMilliseconds // ignore: cast_nullable_to_non_nullable
 as int,timestamp: null == timestamp ? _self.timestamp : timestamp // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,comment: freezed == comment ? _self.comment : comment // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
