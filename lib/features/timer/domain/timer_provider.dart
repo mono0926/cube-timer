@@ -4,6 +4,7 @@ import '../../../core/sound/sound_provider.dart';
 import '../../../core/utils/logger.dart';
 import '../../../core/utils/scramble_generator.dart';
 import '../../../core/utils/ticker_service.dart';
+import '../../history/domain/history_item.dart';
 import '../../history/domain/history_provider.dart';
 import 'timer_state.dart';
 
@@ -139,5 +140,15 @@ class TimerController extends _$TimerController {
 
   void _generateScramble() {
     state = state.copyWith(scramble: ScrambleGenerator.generate());
+  }
+
+  void showHistoryResult(HistoryItem item) {
+    _tickerCancel?.call();
+    _tickerService.resetStopwatch();
+    state = state.copyWith(
+      status: TimerStatus.stopped,
+      elapsedMilliseconds: item.durationMilliseconds,
+      scramble: item.scramble,
+    );
   }
 }

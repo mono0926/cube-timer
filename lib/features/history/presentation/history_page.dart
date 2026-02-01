@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../history/domain/history_provider.dart';
+import '../../timer/domain/timer_provider.dart';
 
 class HistoryPage extends ConsumerWidget {
   const HistoryPage({super.key});
@@ -107,6 +108,36 @@ class HistoryPage extends ConsumerWidget {
                   ref.read(historyProvider.notifier).delete(item);
                 },
                 child: ListTile(
+                  onTap: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('この記録を表示しますか？'),
+                        content: const Text(
+                          'タイマー画面に戻り、この記録の結果画面を表示します。',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('キャンセル'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirm == true) {
+                      ref
+                          .read(timerControllerProvider.notifier)
+                          .showHistoryResult(item);
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    }
+                  },
                   onLongPress: () async {
                     final confirm = await showDialog<bool>(
                       context: context,

@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:timer/features/history/domain/history_item.dart';
 import 'package:timer/features/history/domain/history_provider.dart';
 import 'package:timer/features/history/presentation/history_page.dart';
+import 'package:timer/features/timer/domain/timer_provider.dart';
+import 'package:timer/features/timer/domain/timer_state.dart';
 
 class FakeHistory extends AutoDisposeAsyncNotifier<List<HistoryItem>>
     implements History {
@@ -128,5 +130,76 @@ void main() {
       // Should handle clear (FakeHistory clears state)
       expect(find.text('まだ履歴がありません'), findsOneWidget);
     });
+    testWidgets('Tap to show result', (tester) async {
+      final fakeHistory = FakeHistory()
+        ..items = [
+          HistoryItem(
+            id: 1,
+            scramble: 'S',
+            durationMilliseconds: 1000,
+            timestamp: DateTime.now(),
+          ),
+        ];
+
+      final fakeTimerController = FakeTimerController();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            historyProvider.overrideWith(() => fakeHistory),
+            timerControllerProvider.overrideWith(() => fakeTimerController),
+          ],
+          child: const MaterialApp(home: HistoryPage()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Find the item
+      final listItem = find.text('S');
+      expect(listItem, findsOneWidget);
+
+      await tester.tap(listItem);
+      await tester.pumpAndSettle();
+
+      // Dialog should appear
+      expect(find.text('この記録を表示しますか？'), findsOneWidget);
+      expect(find.text('キャンセル'), findsOneWidget);
+      final okButton = find.text('OK');
+      expect(okButton, findsOneWidget);
+
+      // Confirm
+      await tester.tap(okButton);
+      await tester.pumpAndSettle();
+
+      // Verify showHistoryResult was called
+      expect(fakeTimerController.showedItem, fakeHistory.items.first);
+    });
   });
+}
+
+class FakeTimerController extends AutoDisposeNotifier<TimerState>
+    implements TimerController {
+  HistoryItem? showedItem;
+
+  @override
+  TimerState build() {
+    return const TimerState();
+  }
+
+  @override
+  void showHistoryResult(HistoryItem item) {
+    showedItem = item;
+  }
+
+  @override
+  void handlePointerDown(int pointerId) {}
+
+  @override
+  void handlePointerUp(int pointerId) {}
+
+  @override
+  void reset() {}
+
+  // TickerService is not used in this fake, but getter exists in real one.
+  // Since we override methods utilizing it, we are safe.
 }
