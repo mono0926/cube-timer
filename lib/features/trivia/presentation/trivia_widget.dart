@@ -97,13 +97,12 @@ class _TriviaWidgetState extends ConsumerState<TriviaWidget> {
                         child: Text(
                           _currentItem!.content,
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
+                          style: Theme.of(context).textTheme.bodyMedium!
+                              .copyWith(
                                 fontSize:
-                                    (Theme.of(
-                                          context,
-                                        ).textTheme.bodyMedium?.fontSize ??
-                                        14) +
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium!.fontSize! +
                                     2,
                                 color: Colors.white.withValues(alpha: 0.9),
                                 height: 1.4,
