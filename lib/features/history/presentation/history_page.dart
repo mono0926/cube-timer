@@ -10,7 +10,7 @@ class HistoryPage extends ConsumerWidget {
   String _formatTime(int milliseconds) {
     final minutes = (milliseconds ~/ 60000).toString().padLeft(2, '0');
     final seconds = ((milliseconds % 60000) ~/ 1000).toString().padLeft(2, '0');
-    final centis = ((milliseconds % 1000) ~/ 10).toString().padLeft(2, '0');
+    final centis = (milliseconds % 1000).toString().padLeft(3, '0');
     if (milliseconds < 60000) {
       return '$seconds.$centis';
     }
@@ -18,7 +18,7 @@ class HistoryPage extends ConsumerWidget {
   }
 
   String _formatDate(DateTime date) {
-    return DateFormat.yMMMd().add_jm().format(date);
+    return DateFormat('yyyy/MM/dd HH:mm').format(date);
   }
 
   @override
@@ -28,7 +28,7 @@ class HistoryPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('History'),
+        title: const Text('履歴'),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline),
@@ -36,17 +36,17 @@ class HistoryPage extends ConsumerWidget {
               final confirm = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
-                  title: const Text('Clear History?'),
-                  content: const Text('This action cannot be undone.'),
+                  title: const Text('履歴を削除しますか？'),
+                  content: const Text('この操作は取り消せません。'),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
-                      child: const Text('Cancel'),
+                      child: const Text('キャンセル'),
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(context, true),
                       child: Text(
-                        'Clear',
+                        '削除',
                         style: TextStyle(color: theme.colorScheme.error),
                       ),
                     ),
@@ -75,7 +75,7 @@ class HistoryPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No solves yet',
+                    'まだ履歴がありません',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.colorScheme.outline,
                     ),
@@ -111,20 +111,20 @@ class HistoryPage extends ConsumerWidget {
                     final confirm = await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text('Delete this solve?'),
+                        title: const Text('この記録を削除しますか？'),
                         content: Text(
-                          'Time: ${_formatTime(item.durationMilliseconds)}\n'
+                          'タイム: ${_formatTime(item.durationMilliseconds)}\n'
                           '${item.scramble}',
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancel'),
+                            child: const Text('キャンセル'),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(context, true),
                             child: Text(
-                              'Delete',
+                              '削除',
                               style: TextStyle(color: theme.colorScheme.error),
                             ),
                           ),

@@ -90,7 +90,7 @@ class _TimerPageState extends ConsumerState<TimerPage> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Cube Timer'),
+        title: const Text('キューブタイマー'),
         centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -426,10 +426,10 @@ class _TimerPageState extends ConsumerState<TimerPage> {
     final duration = Duration(milliseconds: milliseconds);
     final minutes = duration.inMinutes;
     final seconds = duration.inSeconds % 60;
-    final centiseconds = (milliseconds % 1000) ~/ 10;
+    final centiseconds = milliseconds % 1000;
     return '${minutes.toString().padLeft(2, '0')}:'
         '${seconds.toString().padLeft(2, '0')}.'
-        '${centiseconds.toString().padLeft(2, '0')}';
+        '${centiseconds.toString().padLeft(3, '0')}';
   }
 }
 

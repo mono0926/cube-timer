@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/router/app_router.dart';
@@ -14,10 +15,19 @@ class App extends ConsumerWidget {
     final darkTheme = ref.watch(darkThemeProvider);
 
     return MaterialApp.router(
-      title: 'Cube Timer',
+      title: 'キューブタイマー',
       theme: lightTheme,
       darkTheme: darkTheme,
       routerConfig: router,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('ja'),
+      ],
+      locale: const Locale('ja'),
     );
   }
 }
