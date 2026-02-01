@@ -48,7 +48,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('No solves yet'), findsOneWidget);
+      expect(find.text('まだ履歴がありません'), findsOneWidget);
     });
 
     testWidgets('List Items display', (tester) async {
@@ -80,11 +80,11 @@ void main() {
 
       // Check content
       // 5000ms -> 05.00
-      expect(find.text('05.00'), findsOneWidget);
+      expect(find.text('05.000'), findsOneWidget);
       expect(find.text('R U R\''), findsOneWidget);
 
       // 10000ms -> 10.00
-      expect(find.text('10.00'), findsOneWidget);
+      expect(find.text('10.000'), findsOneWidget);
     });
 
     testWidgets('Clear button', (tester) async {
@@ -116,9 +116,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Dialog should appear
-      expect(find.text('Clear History?'), findsOneWidget);
-      expect(find.text('Cancel'), findsOneWidget);
-      final deleteConfirm = find.text('Clear');
+      expect(find.text('履歴を削除しますか？'), findsOneWidget);
+      expect(find.text('キャンセル'), findsOneWidget);
+      final deleteConfirm = find.text('削除');
       expect(deleteConfirm, findsOneWidget);
 
       // Confirm delete
@@ -126,7 +126,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Should handle clear (FakeHistory clears state)
-      expect(find.text('No solves yet'), findsOneWidget);
+      expect(find.text('まだ履歴がありません'), findsOneWidget);
     });
   });
 }

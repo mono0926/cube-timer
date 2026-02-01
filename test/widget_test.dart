@@ -25,6 +25,6 @@ void main() {
       ),
     );
 
-    expect(find.text('Cube Timer'), findsOneWidget);
+    expect(find.text('キューブタイマー'), findsOneWidget);
   });
 }

@@ -342,9 +342,7 @@ class _TimerPageState extends ConsumerState<TimerPage> {
                   ),
 
                   // Trivia Widget (Visible only in Idle 0s state)
-                  if (MediaQuery.sizeOf(context).height > 400 &&
-                      state.status == TimerStatus.idle &&
-                      state.elapsedMilliseconds == 0)
+                  if (MediaQuery.sizeOf(context).height > 400)
                     const TriviaWidget(),
                 ],
               ),

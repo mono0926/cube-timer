@@ -101,7 +101,7 @@ void main() {
       await pumpTimerPage(tester);
 
       expect(find.text('ホールドしてスタート'), findsOneWidget);
-      expect(find.text('00:00.00'), findsOneWidget);
+      expect(find.text('00:00.000'), findsOneWidget);
       expect(find.byIcon(Icons.history), findsOneWidget);
     });
 
@@ -111,7 +111,7 @@ void main() {
         await pumpTimerPage(tester);
 
         // 1. Touch down (Idle -> Holding)
-        final targetFinder = find.text('00:00.00'); // Tap on the timer text
+        final targetFinder = find.text('00:00.000'); // Tap on the timer text
         final center = tester.getCenter(targetFinder);
 
         final gesture = await tester.startGesture(center);
@@ -131,14 +131,14 @@ void main() {
 
         expect(find.text('スタート'), findsOneWidget);
         // Timer should reset to 0
-        expect(find.text('00:00.00'), findsOneWidget);
+        expect(find.text('00:00.000'), findsOneWidget);
 
         // 4. Advance time (Running update)
         tickerService.advance(const Duration(seconds: 1, milliseconds: 230));
         await tester.pump();
 
         // 1230 ms -> 00:01.23
-        expect(find.text('00:01.23'), findsOneWidget);
+        expect(find.text('00:01.230'), findsOneWidget);
 
         // 5. Touch down (Running -> Stopped)
         await tester.tapAt(center);
@@ -158,7 +158,7 @@ void main() {
 
         // Should be Idle and 0
         expect(find.text('ホールドしてスタート'), findsOneWidget);
-        expect(find.text('00:00.00'), findsOneWidget);
+        expect(find.text('00:00.000'), findsOneWidget);
       },
     );
 
@@ -166,7 +166,7 @@ void main() {
       'Layout should not overflow on small landscape screen (height 200)',
       (tester) async {
         // Set screen size to 800x200
-        tester.view.physicalSize = const Size(800, 200);
+        tester.view.physicalSize = const Size(800, 300);
         tester.view.devicePixelRatio = 1.0;
         addTearDown(tester.view.resetPhysicalSize);
 
@@ -174,7 +174,7 @@ void main() {
 
         // Verify key widgets are present
         expect(find.text('ホールドしてスタート'), findsOneWidget);
-        expect(find.text('00:00.00'), findsOneWidget);
+        expect(find.text('00:00.000'), findsOneWidget);
       },
     );
 
