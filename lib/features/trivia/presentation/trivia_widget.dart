@@ -99,6 +99,12 @@ class _TriviaWidgetState extends ConsumerState<TriviaWidget> {
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
+                                fontSize:
+                                    (Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium?.fontSize ??
+                                        14) +
+                                    2,
                                 color: Colors.white.withValues(alpha: 0.9),
                                 height: 1.4,
                                 shadows: [
