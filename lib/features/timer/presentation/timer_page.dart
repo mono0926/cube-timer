@@ -1,11 +1,9 @@
-import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/router/app_router.dart';
@@ -43,19 +41,22 @@ class _TimerPageState extends ConsumerState<TimerPage> {
         return;
       }
 
-      // 2. Save to temporary file
-      final tempDir = await getTemporaryDirectory();
-      final file = await File('${tempDir.path}/cube_timer_result.png').create();
-      await file.writeAsBytes(pngBytes);
+      // 2. Prepare File (In-Memory for Web/Mobile compatibility)
+      final xFile = XFile.fromData(
+        pngBytes,
+        mimeType: 'image/png',
+        name: 'cube_timer_result.png',
+      );
 
       // 3. Prepare Text
       final timeText = _formatTime(state.elapsedMilliseconds);
       final text = '記録は$timeTextでした。 #CubeTimer';
 
       // 4. Share
+      // 4. Share
       await SharePlus.instance.share(
         ShareParams(
-          files: [XFile(file.path)],
+          files: [xFile],
           text: text,
         ),
       );
