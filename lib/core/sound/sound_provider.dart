@@ -5,29 +5,40 @@ part 'sound_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class SoundController extends _$SoundController {
-  late AudioPlayer _player;
+  late final AudioPlayer _readyPlayer;
+  late final AudioPlayer _startPlayer;
+  late final AudioPlayer _stopPlayer;
 
   @override
   void build() {
-    _player = AudioPlayer();
-    // Preload sounds if necessary, though AssetSource usually handles it well.
+    _readyPlayer = _createPlayer('audio/ready.mp3');
+    _startPlayer = _createPlayer('audio/start.mp3');
+    _stopPlayer = _createPlayer('audio/stop.mp3');
+
     ref.onDispose(() {
-      _player.dispose();
+      _readyPlayer.dispose();
+      _startPlayer.dispose();
+      _stopPlayer.dispose();
     });
   }
 
-  Future<void> playReady() async {
-    await _player.stop();
-    await _player.play(AssetSource('audio/ready.mp3'), volume: 1);
+  AudioPlayer _createPlayer(String path) {
+    final player = AudioPlayer();
+    // Use low latency mode (Web Audio API)
+    player.setPlayerMode(PlayerMode.lowLatency);
+    // Preload source to decode buffer in advance
+    player.setSource(AssetSource(path));
+    return player;
   }
 
-  Future<void> playStart() async {
-    await _player.stop();
-    await _player.play(AssetSource('audio/start.mp3'), volume: 1);
+  Future<void> _replay(AudioPlayer player, String path) async {
+    await player.stop();
+    // Use play() instead of resume() to ensure AudioContext is unlocked
+    // on the first user interaction (Web autoplay policy).
+    await player.play(AssetSource(path));
   }
 
-  Future<void> playStop() async {
-    await _player.stop();
-    await _player.play(AssetSource('audio/stop.mp3'), volume: 1);
-  }
+  Future<void> playReady() => _replay(_readyPlayer, 'audio/ready.mp3');
+  Future<void> playStart() => _replay(_startPlayer, 'audio/start.mp3');
+  Future<void> playStop() => _replay(_stopPlayer, 'audio/stop.mp3');
 }
