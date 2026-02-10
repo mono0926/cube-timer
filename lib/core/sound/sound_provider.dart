@@ -23,12 +23,11 @@ class SoundController extends _$SoundController {
   }
 
   AudioPlayer _createPlayer(String path) {
-    final player = AudioPlayer();
-    // Use low latency mode (Web Audio API)
-    player.setPlayerMode(PlayerMode.lowLatency);
-    // Preload source to decode buffer in advance
-    player.setSource(AssetSource(path));
-    return player;
+    return AudioPlayer()
+      // Use low latency mode (Web Audio API)
+      ..setPlayerMode(PlayerMode.lowLatency)
+      // Preload source to decode buffer in advance
+      ..setSource(AssetSource(path));
   }
 
   Future<void> _replay(AudioPlayer player, String path) async {
