@@ -106,7 +106,9 @@ class ScramblePage extends HookWidget {
                             const Text(
                               'タップして2D/3D切替',
                               style: TextStyle(
-                                  color: Colors.white54, fontSize: 13),
+                                color: Colors.white54,
+                                fontSize: 13,
+                              ),
                             ),
                             Expanded(
                               child: ScrambleVisualizer(cubeState: cubeState),
