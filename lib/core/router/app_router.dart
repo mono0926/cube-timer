@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/history/presentation/history_page.dart';
-import '../../features/timer/presentation/scramble_page.dart';
+import '../../features/scramble/presentation/scramble_page.dart';
 import '../../features/timer/presentation/timer_page.dart';
 
 part 'app_router.g.dart';

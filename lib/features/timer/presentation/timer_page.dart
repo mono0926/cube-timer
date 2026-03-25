@@ -96,6 +96,7 @@ class _TimerPageState extends ConsumerState<TimerPage> {
         centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.shuffle),

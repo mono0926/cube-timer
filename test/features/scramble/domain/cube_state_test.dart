@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:timer/features/timer/domain/cube_state.dart';
+import 'package:timer/features/scramble/domain/cube_state.dart';
 
 void main() {
   test('R move changes specific stickers', () {

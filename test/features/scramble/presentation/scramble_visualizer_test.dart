@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:timer/features/timer/domain/cube_state.dart';
-import 'package:timer/features/timer/presentation/scramble_visualizer.dart';
+import 'package:timer/features/scramble/domain/cube_state.dart';
+import 'package:timer/features/scramble/presentation/scramble_visualizer.dart';
 
 void main() {
   testWidgets('ScrambleVisualizer can render and toggle', (
