@@ -7,11 +7,15 @@ class ScrambleVisualizer extends StatefulWidget {
   const ScrambleVisualizer({
     super.key,
     required this.cubeState,
-    this.initialIs3D = false,
+    this.is3D,
+    this.onToggle,
+    this.initialIs3D = true,
     this.interactive = true,
   });
 
   final CubeState cubeState;
+  final bool? is3D;
+  final VoidCallback? onToggle;
   final bool initialIs3D;
   final bool interactive;
 
@@ -20,16 +24,22 @@ class ScrambleVisualizer extends StatefulWidget {
 }
 
 class _ScrambleVisualizerState extends State<ScrambleVisualizer> {
-  late bool _is3D = widget.initialIs3D;
+  late bool _internalIs3D = widget.initialIs3D;
+
+  bool get _currentIs3D => widget.is3D ?? _internalIs3D;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.interactive
           ? () {
-              setState(() {
-                _is3D = !_is3D;
-              });
+              if (widget.onToggle != null) {
+                widget.onToggle!();
+              } else {
+                setState(() {
+                  _internalIs3D = !_internalIs3D;
+                });
+              }
             }
           : null,
       child: Container(
@@ -39,11 +49,11 @@ class _ScrambleVisualizerState extends State<ScrambleVisualizer> {
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           child: CustomPaint(
-            key: ValueKey(_is3D),
+            key: ValueKey(_currentIs3D),
             size: Size.infinite,
             painter: _CubePainter(
               cubeState: widget.cubeState,
-              is3D: _is3D,
+              is3D: _currentIs3D,
             ),
           ),
         ),

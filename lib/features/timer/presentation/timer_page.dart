@@ -100,7 +100,7 @@ class _TimerPageState extends ConsumerState<TimerPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.shuffle),
-            tooltip: 'シャッフル補助',
+            tooltip: 'スクランブル',
             onPressed: () => const ScrambleRoute().go(context),
           ),
           IconButton(
@@ -214,7 +214,7 @@ class _TimerPageState extends ConsumerState<TimerPage> {
                           child: AnimatedDefaultTextStyle(
                             duration: const Duration(milliseconds: 300),
                             style: theme.textTheme.headlineSmall!.copyWith(
-                              color: Colors.white70,
+                              color: Colors.white,
                               shadows: [
                                 const BoxShadow(
                                   color: Colors.purpleAccent,

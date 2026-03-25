@@ -11,6 +11,7 @@ class ScramblePage extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final scramble = useState(ScrambleGenerator.generate());
+    final is3D = useState(true);
     final cubeState = useMemoized(() {
       return CubeState.solved().applyScramble(scramble.value);
     }, [scramble.value]);
@@ -24,10 +25,13 @@ class ScramblePage extends HookWidget {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('シャッフル補助'),
+        title: const Text('スクランブル'),
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.white,
+        titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(
+          color: Colors.white,
+        ),
       ),
       body: DecoratedBox(
         decoration: BoxDecoration(
@@ -58,7 +62,6 @@ class ScramblePage extends HookWidget {
                                 width: 60,
                                 child: ScrambleVisualizer(
                                   cubeState: CubeState.solved(),
-                                  initialIs3D: true,
                                   interactive: false,
                                 ),
                               ),
@@ -66,7 +69,7 @@ class ScramblePage extends HookWidget {
                               AnimatedDefaultTextStyle(
                                 duration: const Duration(milliseconds: 300),
                                 style: theme.textTheme.titleLarge!.copyWith(
-                                  color: Colors.white70,
+                                  color: Colors.white,
                                   shadows: [
                                     const BoxShadow(
                                       color: Colors.purpleAccent,
@@ -106,12 +109,16 @@ class ScramblePage extends HookWidget {
                             const Text(
                               'タップして2D/3D切替',
                               style: TextStyle(
-                                color: Colors.white54,
+                                color: Colors.white70,
                                 fontSize: 13,
                               ),
                             ),
                             Expanded(
-                              child: ScrambleVisualizer(cubeState: cubeState),
+                              child: ScrambleVisualizer(
+                                cubeState: cubeState,
+                                is3D: is3D.value,
+                                onToggle: () => is3D.value = !is3D.value,
+                              ),
                             ),
                           ],
                         ),
@@ -138,7 +145,6 @@ class ScramblePage extends HookWidget {
                               width: 75,
                               child: ScrambleVisualizer(
                                 cubeState: CubeState.solved(),
-                                initialIs3D: true,
                                 interactive: false,
                               ),
                             ),
@@ -146,7 +152,7 @@ class ScramblePage extends HookWidget {
                             AnimatedDefaultTextStyle(
                               duration: const Duration(milliseconds: 300),
                               style: theme.textTheme.headlineSmall!.copyWith(
-                                color: Colors.white70,
+                                color: Colors.white,
                                 shadows: [
                                   const BoxShadow(
                                     color: Colors.purpleAccent,
@@ -166,14 +172,18 @@ class ScramblePage extends HookWidget {
 
                     const Text(
                       'タップして2D/3Dを切り替え',
-                      style: TextStyle(color: Colors.white54, fontSize: 13),
+                      style: TextStyle(color: Colors.white70, fontSize: 13),
                     ),
 
                     // Visualizer space
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.all(32),
-                        child: ScrambleVisualizer(cubeState: cubeState),
+                        child: ScrambleVisualizer(
+                          cubeState: cubeState,
+                          is3D: is3D.value,
+                          onToggle: () => is3D.value = !is3D.value,
+                        ),
                       ),
                     ),
 
