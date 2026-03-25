@@ -16,22 +16,22 @@ class ScrambleGenerator {
 
     for (var i = 0; i < length; i++) {
       int face;
+      bool isValid;
       do {
         face = _random.nextInt(_moves.length);
-        
+
         final isSameFace = face == lastFace;
         // Check if current face is on the same axis as the last two faces.
         // If U followed D, the third move must not be U or D.
         final currentAxis = face ~/ 2;
         final lastAxis = lastFace != null ? lastFace ~/ 2 : -1;
-        final secondLastAxis = secondLastFace != null ? secondLastFace ~/ 2 : -2;
-        
-        final isSameAxisTriple = (currentAxis == lastAxis) && (lastAxis == secondLastAxis);
+        final sLastAxis = secondLastFace != null ? secondLastFace ~/ 2 : -2;
 
-        if (!isSameFace && !isSameAxisTriple) {
-          break;
-        }
-      } while (true);
+        final isSameAxisTriple =
+            (currentAxis == lastAxis) && (lastAxis == sLastAxis);
+
+        isValid = !isSameFace && !isSameAxisTriple;
+      } while (!isValid);
 
       secondLastFace = lastFace;
       lastFace = face;
