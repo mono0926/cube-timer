@@ -14,6 +14,7 @@ RouteBase get $timerRoute => GoRouteData.$route(
   factory: _$TimerRoute._fromState,
   routes: [
     GoRouteData.$route(path: 'history', factory: _$HistoryRoute._fromState),
+    GoRouteData.$route(path: 'scramble', factory: _$ScrambleRoute._fromState),
   ],
 );
 
@@ -42,6 +43,26 @@ mixin _$HistoryRoute on GoRouteData {
 
   @override
   String get location => GoRouteData.$location('/history');
+
+  @override
+  void go(BuildContext context) => context.go(location);
+
+  @override
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  @override
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  @override
+  void replace(BuildContext context) => context.replace(location);
+}
+
+mixin _$ScrambleRoute on GoRouteData {
+  static ScrambleRoute _fromState(GoRouterState state) => const ScrambleRoute();
+
+  @override
+  String get location => GoRouteData.$location('/scramble');
 
   @override
   void go(BuildContext context) => context.go(location);

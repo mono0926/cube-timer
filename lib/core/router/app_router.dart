@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/history/presentation/history_page.dart';
+import '../../features/timer/presentation/scramble_page.dart';
 import '../../features/timer/presentation/timer_page.dart';
 
 part 'app_router.g.dart';
@@ -22,6 +23,9 @@ GoRouter goRouter(Ref ref) {
     TypedGoRoute<HistoryRoute>(
       path: 'history',
     ),
+    TypedGoRoute<ScrambleRoute>(
+      path: 'scramble',
+    ),
   ],
 )
 class TimerRoute extends GoRouteData with _$TimerRoute {
@@ -37,4 +41,12 @@ class HistoryRoute extends GoRouteData with _$HistoryRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) =>
       const HistoryPage();
+}
+
+class ScrambleRoute extends GoRouteData with _$ScrambleRoute {
+  const ScrambleRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const ScramblePage();
 }
