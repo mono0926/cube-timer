@@ -101,11 +101,11 @@ class _TimerPageState extends ConsumerState<TimerPage> {
           IconButton(
             icon: const Icon(Icons.shuffle),
             tooltip: 'シャッフル補助',
-            onPressed: () => const ScrambleRoute().push<void>(context),
+            onPressed: () => const ScrambleRoute().go(context),
           ),
           IconButton(
             icon: const Icon(Icons.history),
-            onPressed: () => const HistoryRoute().push<void>(context),
+            onPressed: () => const HistoryRoute().go(context),
           ),
         ],
       ),
