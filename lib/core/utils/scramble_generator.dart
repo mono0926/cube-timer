@@ -8,23 +8,36 @@ class ScrambleGenerator {
   static const _modifiers = ['', "'", '2'];
 
   static String generate({int length = 20}) {
-    // Basic generator that ensures no component repeats immediately
-    // e.g. R R is invalid, R R2 is invalid.
-    // Also R L R is valid (different axes),
-    // but for simplicity we only check immediate repeats.
-
+    // Moves: 0:R, 1:L, 2:U, 3:D, 4:F, 5:B
+    // Axes: 0:(R,L), 1:(U,D), 2:(F,B)
     final scramble = <String>[];
-    String? lastMove;
+    int? lastFace;
+    int? secondLastFace;
 
     for (var i = 0; i < length; i++) {
-      String move;
+      int face;
       do {
-        move = _moves[_random.nextInt(_moves.length)];
-      } while (move == lastMove);
+        face = _random.nextInt(_moves.length);
+        
+        final isSameFace = face == lastFace;
+        // Check if current face is on the same axis as the last two faces.
+        // If U followed D, the third move must not be U or D.
+        final currentAxis = face ~/ 2;
+        final lastAxis = lastFace != null ? lastFace ~/ 2 : -1;
+        final secondLastAxis = secondLastFace != null ? secondLastFace ~/ 2 : -2;
+        
+        final isSameAxisTriple = (currentAxis == lastAxis) && (lastAxis == secondLastAxis);
 
-      lastMove = move;
+        if (!isSameFace && !isSameAxisTriple) {
+          break;
+        }
+      } while (true);
+
+      secondLastFace = lastFace;
+      lastFace = face;
+
       final modifier = _modifiers[_random.nextInt(_modifiers.length)];
-      scramble.add('$move$modifier');
+      scramble.add('${_moves[face]}$modifier');
     }
 
     return scramble.join(' ');
