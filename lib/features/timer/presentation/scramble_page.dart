@@ -55,7 +55,8 @@ class ScramblePage extends HookWidget {
                         width: 75,
                         child: ScrambleVisualizer(
                           cubeState: CubeState.solved(),
-                          initialIs3D: true, // Show 3D so user sees U, F, R colors
+                          initialIs3D:
+                              true, // Show 3D so user sees U, F, R colors
                           interactive: false,
                         ),
                       ),
