@@ -38,7 +38,7 @@ class ScramblePage extends HookWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // Scramble text
+              // Scramble text block
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -46,25 +46,40 @@ class ScramblePage extends HookWidget {
                 ),
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
-                  child: AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 300),
-                    style: theme.textTheme.headlineSmall!.copyWith(
-                      color: Colors.white70,
-                      shadows: [
-                        const BoxShadow(
-                          color: Colors.purpleAccent,
-                          blurRadius: 10,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Small indicator for initial solved state
+                      SizedBox(
+                        height: 75,
+                        width: 75,
+                        child: ScrambleVisualizer(
+                          cubeState: CubeState.solved(),
+                          initialIs3D: true, // Show 3D so user sees U, F, R colors
+                          interactive: false,
                         ),
-                      ],
-                    ),
-                    child: Text(
-                      scramble.value,
-                      textAlign: TextAlign.center,
-                    ),
+                      ),
+                      const SizedBox(width: 16),
+                      AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 300),
+                        style: theme.textTheme.headlineSmall!.copyWith(
+                          color: Colors.white70,
+                          shadows: [
+                            const BoxShadow(
+                              color: Colors.purpleAccent,
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          scramble.value,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
 
               const Text(
                 'タップして2D/3Dを切り替え',

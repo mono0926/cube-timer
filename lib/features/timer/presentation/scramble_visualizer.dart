@@ -4,25 +4,34 @@ import 'package:flutter/material.dart';
 import '../domain/cube_state.dart';
 
 class ScrambleVisualizer extends StatefulWidget {
-  const ScrambleVisualizer({super.key, required this.cubeState});
+  const ScrambleVisualizer({
+    super.key,
+    required this.cubeState,
+    this.initialIs3D = false,
+    this.interactive = true,
+  });
 
   final CubeState cubeState;
+  final bool initialIs3D;
+  final bool interactive;
 
   @override
   State<ScrambleVisualizer> createState() => _ScrambleVisualizerState();
 }
 
 class _ScrambleVisualizerState extends State<ScrambleVisualizer> {
-  bool _is3D = true;
+  late bool _is3D = widget.initialIs3D;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _is3D = !_is3D;
-        });
-      },
+      onTap: widget.interactive
+          ? () {
+              setState(() {
+                _is3D = !_is3D;
+              });
+            }
+          : null,
       child: Container(
         color: Colors.transparent,
         width: double.infinity,
