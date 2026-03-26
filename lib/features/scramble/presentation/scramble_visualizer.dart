@@ -648,7 +648,7 @@ class _CubePainter extends CustomPainter {
       for (var r = 0; r < 3; r++) {
         for (var c = 0; c < 3; c++) {
           final color =
-              cubeState.stickers[startIndex + r * 3 + c].materialColor;
+              cubeState.intToColor(cubeState.stickers[startIndex + r * 3 + c]).materialColor;
           final cellRect = Rect.fromLTWH(
             startX + c * cellSize,
             startY + r * cellSize,
@@ -754,9 +754,6 @@ class _CubePainter extends CustomPainter {
     final availableHeight = size.height - 32;
     final scale =
         math.min(availableWidth, availableHeight) / (2 * math.sqrt(3));
-
-    final centerDx = size.width / 2;
-    final centerDy = size.height / 2;
 
     const viewDir = _Vector3(0, 0, 1);
 
@@ -908,7 +905,6 @@ class _CubePainter extends CustomPainter {
     }
 
     for (final face in _FaceDef.faces) {
-      final startIdx = face.face.index * 9;
       for (var r = 0; r < 3; r++) {
         for (var c = 0; c < 3; c++) {
           final origin =
@@ -939,7 +935,7 @@ class _CubePainter extends CustomPainter {
 
           if (normal.dot(viewDir) > -0.1) {
             final color =
-                cubeState.stickers[startIdx + r * 3 + c].materialColor;
+                cubeState.intToColor(cubeState.stickers[face.face.index * 9 + r * 3 + c]).materialColor;
             activeStickers.add(_StickerRender(p1, p2, p3, p4, center.z, color));
           }
         }
@@ -950,7 +946,7 @@ class _CubePainter extends CustomPainter {
 
     for (final sticker in activeStickers) {
       Offset toOffset(_Vector3 v) =>
-          Offset(centerDx + v.x * scale, centerDy + v.y * scale);
+          Offset(size.width / 2 + v.x * scale, size.height / 2 + v.y * scale);
 
       _drawPoly(
         canvas,

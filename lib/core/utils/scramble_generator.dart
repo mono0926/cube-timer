@@ -20,17 +20,27 @@ class ScrambleGenerator {
       do {
         face = _random.nextInt(_moves.length);
 
-        final isSameFace = face == lastFace;
-        // Check if current face is on the same axis as the last two faces.
-        // If U followed D, the third move must not be U or D.
         final currentAxis = face ~/ 2;
-        final lastAxis = lastFace != null ? lastFace ~/ 2 : -1;
-        final sLastAxis = secondLastFace != null ? secondLastFace ~/ 2 : -2;
+        final lastAxis = lastFace != null ? lastFace ~/ 2 : null;
+        final sLastAxis = secondLastFace != null ? secondLastFace ~/ 2 : null;
 
-        final isSameAxisTriple =
-            (currentAxis == lastAxis) && (lastAxis == sLastAxis);
+        // 1. Same face cannot repeat (e.g., R R)
+        final isSameFace = face == lastFace;
 
-        isValid = !isSameFace && !isSameAxisTriple;
+        // 2. Same axis triple move is forbidden if the middle move was on the same axis.
+        // Standard WCA rule: If two consecutive moves are on the same axis (e.g., U D),
+        // the third move cannot be on that same axis (e.g., U D U is invalid).
+        var isSameAxisConflict = false;
+        if (lastAxis != null && currentAxis == lastAxis) {
+          if (face == lastFace) {
+            isSameAxisConflict = true; // Redundant check but safe
+          } else if (sLastAxis != null && lastAxis == sLastAxis) {
+            // Triple moves on the same axis are always invalid (e.g., U D U, U U D)
+            isSameAxisConflict = true;
+          }
+        }
+
+        isValid = !isSameFace && !isSameAxisConflict;
       } while (!isValid);
 
       secondLastFace = lastFace;

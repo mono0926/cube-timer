@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 enum Face { u, f, r, d, b, l }
@@ -33,22 +34,25 @@ class CubeState {
   const CubeState(this.stickers);
 
   factory CubeState.solved() {
-    return CubeState([
-      ...List.filled(9, CubeColor.yellow), // U
-      ...List.filled(9, CubeColor.blue), // F
-      ...List.filled(9, CubeColor.red), // R
-      ...List.filled(9, CubeColor.white), // D
-      ...List.filled(9, CubeColor.green), // B
-      ...List.filled(9, CubeColor.orange), // L
-    ]);
+    final stickers = Uint8List(54);
+    for (var i = 0; i < 6; i++) {
+      for (var j = 0; j < 9; j++) {
+        stickers[i * 9 + j] = i;
+      }
+    }
+    return CubeState(stickers);
   }
 
   /// 54 stickers in order of faces: U, F, R, D, B, L (9 stickers per face)
-  final List<CubeColor> stickers;
+  final Uint8List stickers;
+
+  CubeColor intToColor(int value) {
+    return CubeColor.values[value];
+  }
 
   bool get isSolved {
     for (var i = 0; i < 6; i++) {
-      final faceColor = stickers[i * 9 + 4]; // Use center sticker as reference
+      final faceColor = stickers[i * 9 + 4];
       for (var j = 0; j < 9; j++) {
         if (stickers[i * 9 + j] != faceColor) {
           return false;
@@ -79,71 +83,45 @@ class CubeState {
 
     var newState = this;
 
-    void applyMapping(List<int> mapping, bool invert) {
+    void applyMapping(List<int> mapping) {
       var count = 1;
       if (modifier.contains("'")) {
         count = 3;
       } else if (modifier.contains('2')) {
         count = 2;
       }
-      if (invert) {
-        if (count == 1) {
-          count = 3;
-        } else if (count == 3) {
-          count = 1;
-        }
-      }
+      
       for (var i = 0; i < count; i++) {
         newState = newState._applyMapping(mapping);
       }
     }
 
     switch (faceChar) {
-      case 'U':
-        applyMapping(_UMove, false);
-      case 'D':
-        applyMapping(_DMove, false);
-      case 'F':
-        applyMapping(_FMove, false);
-      case 'B':
-        applyMapping(_BMove, false);
-      case 'R':
-        applyMapping(_RMove, false);
-      case 'L':
-        applyMapping(_LMove, false);
-      case 'M':
-        applyMapping(_MMove, false);
-      case 'E':
-        applyMapping(_EMove, false);
-      case 'S':
-        applyMapping(_SMove, false);
-
-      case 'u':
-        applyMapping(_uMove, false);
-      case 'd':
-        applyMapping(_dMove, false);
-      case 'f':
-        applyMapping(_fMove, false);
-      case 'b':
-        applyMapping(_bMove, false);
-      case 'r':
-        applyMapping(_rMove, false);
-      case 'l':
-        applyMapping(_lMove, false);
-
-      case 'x' || 'X':
-        applyMapping(_xMove, false);
-      case 'y' || 'Y':
-        applyMapping(_yMove, false);
-      case 'z' || 'Z':
-        applyMapping(_zMove, false);
+      case 'U': applyMapping(_UMove);
+      case 'D': applyMapping(_DMove);
+      case 'F': applyMapping(_FMove);
+      case 'B': applyMapping(_BMove);
+      case 'R': applyMapping(_RMove);
+      case 'L': applyMapping(_LMove);
+      case 'M': applyMapping(_MMove);
+      case 'E': applyMapping(_EMove);
+      case 'S': applyMapping(_SMove);
+      case 'u': applyMapping(_uMove);
+      case 'd': applyMapping(_dMove);
+      case 'f': applyMapping(_fMove);
+      case 'b': applyMapping(_bMove);
+      case 'r': applyMapping(_rMove);
+      case 'l': applyMapping(_lMove);
+      case 'x' || 'X': applyMapping(_xMove);
+      case 'y' || 'Y': applyMapping(_yMove);
+      case 'z' || 'Z': applyMapping(_zMove);
     }
 
     return newState;
   }
 
   CubeState _applyMapping(List<int> mapping) {
-    final nextStickers = List<CubeColor>.filled(54, CubeColor.yellow);
+    final nextStickers = Uint8List(54);
     for (var i = 0; i < 54; i++) {
       nextStickers[i] = stickers[mapping[i]];
     }
