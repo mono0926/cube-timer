@@ -1,3 +1,4 @@
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,6 +21,10 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
 
   late AnimationController _animationController;
   late Animation<double> _curvedAnimation;
+  late AnimationController _celebrationController;
+  late Animation<double> _celebrationAnimation;
+  late ConfettiController _confettiController;
+
   final List<String> _moveQueue = [];
   bool _isAnimating = false;
   String? _currentMove;
@@ -47,6 +52,19 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
       curve: Curves.easeInOutQuart,
     );
 
+    _celebrationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+    _celebrationAnimation = CurvedAnimation(
+      parent: _celebrationController,
+      curve: Curves.elasticOut,
+    );
+
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 3),
+    );
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
@@ -55,6 +73,8 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
   @override
   void dispose() {
     _animationController.dispose();
+    _celebrationController.dispose();
+    _confettiController.dispose();
     _textController.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -105,7 +125,7 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
 
       final state = ref.read(typingGameStateProvider);
       if (state.isSolved) {
-        _showClearDialog();
+        _startCelebration();
       }
       return;
     }
@@ -167,6 +187,22 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
     _processNextMove();
   }
 
+  Future<void> _startCelebration() async {
+    _isAnimating = false;
+    _currentMove = null;
+    setState(() {});
+
+    _confettiController.play();
+    HapticFeedback.heavyImpact();
+
+    await _celebrationController.forward(from: 0);
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+
+    if (mounted) {
+      _showClearDialog();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(typingGameStateProvider);
@@ -201,13 +237,26 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
                   child: Padding(
                     padding: const EdgeInsets.all(32),
                     child: AnimatedBuilder(
-                      animation: _animationController,
+                      animation: Listenable.merge([
+                        _animationController,
+                        _celebrationController,
+                      ]),
                       builder: (context, child) {
-                        return ScrambleVisualizer(
-                          key: _visualizerKey,
-                          cubeState: state,
-                          animatingMove: _isAnimating ? _currentMove : null,
-                          animationProgress: _curvedAnimation.value,
+                        final victoryRotation = _celebrationAnimation.value *
+                            2 *
+                            3.14159; // 2 full rotations
+                        return Transform(
+                          alignment: Alignment.center,
+                          transform: Matrix4.identity()
+                            ..rotateX(victoryRotation)
+                            ..rotateY(victoryRotation)
+                            ..rotateZ(victoryRotation * 0.5),
+                          child: ScrambleVisualizer(
+                            key: _visualizerKey,
+                            cubeState: state,
+                            animatingMove: _isAnimating ? _currentMove : null,
+                            animationProgress: _curvedAnimation.value,
+                          ),
                         );
                       },
                     ),
@@ -493,6 +542,43 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
     );
   }
 
+  /// A custom Path to draw a star
+  Path _drawStar(Size size) {
+    // Method to convert degree to radians
+    double degToRad(double deg) => deg * (3.141592653589793 / 180.0);
+
+    const numberOfPoints = 5;
+    final halfWidth = size.width / 2;
+    final externalRadius = size.width / 2;
+    final internalRadius = halfWidth / 2.5;
+    final degreesPerStep = degToRad(360 / numberOfPoints);
+    final halfDegreesPerStep = degreesPerStep / 2;
+    final path = Path();
+    final fullAngle = degToRad(-90);
+
+    path.moveTo(
+      size.width / 2,
+      halfWidth + externalRadius * cos(fullAngle),
+    );
+
+    for (var step = 1; step <= numberOfPoints; step++) {
+      path.lineTo(
+        halfWidth + externalRadius * cos(fullAngle + step * degreesPerStep),
+        halfWidth + externalRadius * sin(fullAngle + step * degreesPerStep),
+      );
+      path.lineTo(
+        halfWidth +
+            internalRadius *
+                cos(fullAngle + step * degreesPerStep + halfDegreesPerStep),
+        halfWidth +
+            internalRadius *
+                sin(fullAngle + step * degreesPerStep + halfDegreesPerStep),
+      );
+    }
+    path.close();
+    return path;
+  }
+
   void _showClearDialog() {
     _moveQueue.clear();
     _isAnimating = false;
@@ -508,6 +594,8 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
           actions: [
             TextButton(
               onPressed: () {
+                _celebrationController.reset();
+                _confettiController.stop();
                 ref.read(typingGameStateProvider.notifier).reset();
                 Navigator.of(context).pop();
                 _focusNode.requestFocus();
