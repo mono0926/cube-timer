@@ -98,7 +98,7 @@ void main() {
           state.stickers[9 + 4],
           state.stickers[18 + 4],
           state.stickers[36 + 4],
-          state.stickers[45 + 4]
+          state.stickers[45 + 4],
         };
         // Should always have 4 distinct colors across the 4 sides
         expect(sideColors.length, 4);
@@ -110,9 +110,12 @@ void main() {
       final initial = CubeState.solved();
       final afterM = initial.applyScramble('M');
 
-      expect(afterM.stickers[9 + 4], CubeColor.yellow); // F center gets U center
-      expect(afterM.stickers[27 + 4], CubeColor.blue);   // D center gets F center
-      expect(afterM.stickers[40], CubeColor.white);     // B center gets D center
+      expect(
+        afterM.stickers[9 + 4],
+        CubeColor.yellow,
+      ); // F center gets U center
+      expect(afterM.stickers[27 + 4], CubeColor.blue); // D center gets F center
+      expect(afterM.stickers[40], CubeColor.white); // B center gets D center
     });
 
     test('B move should rotate correctly', () {
@@ -120,8 +123,11 @@ void main() {
       // B move moves top to left, left to bottom, bottom to right, right to top (from front view, B is CCW)
       // Standard B is CW from back, so CCW from front.
       final nextCube = cube.applyScramble('B');
-      expect(nextCube.stickers[36 + 4], CubeColor.green); // Back face center remains green
-      
+      expect(
+        nextCube.stickers[36 + 4],
+        CubeColor.green,
+      ); // Back face center remains green
+
       // y and Y should produce the same result
       final yResult = cube.applyScramble('y');
       final YResult = cube.applyScramble('Y');
@@ -136,7 +142,26 @@ void main() {
     });
 
     test('All face moves should return to solved after 4 rotations', () {
-      final faces = ['U', 'D', 'F', 'B', 'R', 'L', 'M', 'E', 'S', 'u', 'd', 'f', 'b', 'r', 'l', 'x', 'y', 'z'];
+      final faces = [
+        'U',
+        'D',
+        'F',
+        'B',
+        'R',
+        'L',
+        'M',
+        'E',
+        'S',
+        'u',
+        'd',
+        'f',
+        'b',
+        'r',
+        'l',
+        'x',
+        'y',
+        'z',
+      ];
       for (final face in faces) {
         var cube = CubeState.solved();
         for (var i = 0; i < 4; i++) {
@@ -147,17 +172,46 @@ void main() {
     });
 
     test('Exhaustive modifiers test', () {
-       // Test 2 and ' for all moves
-       final faces = ['U', 'D', 'F', 'B', 'R', 'L', 'M', 'E', 'S', 'u', 'd', 'f', 'b', 'r', 'l', 'x', 'y', 'z'];
-       for (final face in faces) {
-         final move2 = CubeState.solved().applyScramble('${face}2');
-         final move2Direct = CubeState.solved().applyScramble('$face $face');
-         expect(move2.stickers, move2Direct.stickers, reason: 'Failed for ${face}2');
+      // Test 2 and ' for all moves
+      final faces = [
+        'U',
+        'D',
+        'F',
+        'B',
+        'R',
+        'L',
+        'M',
+        'E',
+        'S',
+        'u',
+        'd',
+        'f',
+        'b',
+        'r',
+        'l',
+        'x',
+        'y',
+        'z',
+      ];
+      for (final face in faces) {
+        final move2 = CubeState.solved().applyScramble('${face}2');
+        final move2Direct = CubeState.solved().applyScramble('$face $face');
+        expect(
+          move2.stickers,
+          move2Direct.stickers,
+          reason: 'Failed for ${face}2',
+        );
 
-         final movePrime = CubeState.solved().applyScramble("$face'");
-         final moveTriple = CubeState.solved().applyScramble('$face $face $face');
-         expect(movePrime.stickers, moveTriple.stickers, reason: "Failed for $face'");
-       }
+        final movePrime = CubeState.solved().applyScramble("$face'");
+        final moveTriple = CubeState.solved().applyScramble(
+          '$face $face $face',
+        );
+        expect(
+          movePrime.stickers,
+          moveTriple.stickers,
+          reason: "Failed for $face'",
+        );
+      }
     });
   });
 }

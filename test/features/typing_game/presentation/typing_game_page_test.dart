@@ -28,7 +28,10 @@ class FakeTypingGameState extends TypingGameState {
 
 void main() {
   group('TypingGamePage', () {
-    Future<void> pumpPage(WidgetTester tester, {List<Override> overrides = const []}) async {
+    Future<void> pumpPage(
+      WidgetTester tester, {
+      List<Override> overrides = const [],
+    }) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -60,7 +63,7 @@ void main() {
       await tester.pump();
 
       await tester.pumpAndSettle();
-      
+
       expect(find.text('クリア！'), findsOneWidget);
     });
 
@@ -74,11 +77,11 @@ void main() {
 
       // Overlay should show 'sexy'
       expect(find.text('sexy'), findsOneWidget);
-      
+
       // Wait for all 4 moves (R U R' U') to finish
       // Each move is 400ms
       await tester.pumpAndSettle();
-      
+
       // After sexy move on a 1-move scrambled state, it won't be solved, but we checked the flow.
       expect(find.text('sexy'), findsNothing);
     });

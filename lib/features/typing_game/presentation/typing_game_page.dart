@@ -69,7 +69,10 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
     final rawTyped = value.trim();
     final resolved =
         _visualizerKey.currentState?.resolveLogicalMove(rawTyped) ?? rawTyped;
-    final moves = resolved.split(RegExp(r'\s+')).where((m) => m.isNotEmpty).toList();
+    final moves = resolved
+        .split(RegExp(r'\s+'))
+        .where((m) => m.isNotEmpty)
+        .toList();
 
     if (rawTyped != resolved) {
       // It's a command
