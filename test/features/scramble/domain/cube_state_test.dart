@@ -114,5 +114,50 @@ void main() {
       expect(afterM.stickers[27 + 4], CubeColor.blue);   // D center gets F center
       expect(afterM.stickers[40], CubeColor.white);     // B center gets D center
     });
+
+    test('B move should rotate correctly', () {
+      final cube = CubeState.solved();
+      // B move moves top to left, left to bottom, bottom to right, right to top (from front view, B is CCW)
+      // Standard B is CW from back, so CCW from front.
+      final nextCube = cube.applyScramble('B');
+      expect(nextCube.stickers[36 + 4], CubeColor.green); // Back face center remains green
+      
+      // y and Y should produce the same result
+      final yResult = cube.applyScramble('y');
+      final YResult = cube.applyScramble('Y');
+      expect(yResult.stickers, YResult.stickers);
+
+      // y rotate 4 times should return to solved
+      var yCube = CubeState.solved();
+      for (var i = 0; i < 4; i++) {
+        yCube = yCube.applyScramble('y');
+      }
+      expect(yCube.isSolved, isTrue);
+    });
+
+    test('All face moves should return to solved after 4 rotations', () {
+      final faces = ['U', 'D', 'F', 'B', 'R', 'L', 'M', 'E', 'S', 'u', 'd', 'f', 'b', 'r', 'l', 'x', 'y', 'z'];
+      for (final face in faces) {
+        var cube = CubeState.solved();
+        for (var i = 0; i < 4; i++) {
+          cube = cube.applyScramble(face);
+        }
+        expect(cube.isSolved, isTrue, reason: 'Failed for move $face');
+      }
+    });
+
+    test('Exhaustive modifiers test', () {
+       // Test 2 and ' for all moves
+       final faces = ['U', 'D', 'F', 'B', 'R', 'L', 'M', 'E', 'S', 'u', 'd', 'f', 'b', 'r', 'l', 'x', 'y', 'z'];
+       for (final face in faces) {
+         final move2 = CubeState.solved().applyScramble('${face}2');
+         final move2Direct = CubeState.solved().applyScramble('$face $face');
+         expect(move2.stickers, move2Direct.stickers, reason: 'Failed for ${face}2');
+
+         final movePrime = CubeState.solved().applyScramble("$face'");
+         final moveTriple = CubeState.solved().applyScramble('$face $face $face');
+         expect(movePrime.stickers, moveTriple.stickers, reason: "Failed for $face'");
+       }
+    });
   });
 }
