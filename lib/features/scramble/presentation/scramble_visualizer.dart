@@ -34,8 +34,8 @@ class ScrambleVisualizerState extends State<ScrambleVisualizer>
   late bool _internalIs3D = widget.initialIs3D;
   
   static final _Matrix3 _baseTransform = _Matrix3.rotationX(
-    -math.asin(1 / math.sqrt(3)),
-  ).multiply(_Matrix3.rotationY(-math.pi / 4));
+    -20 * math.pi / 180,
+  ).multiply(_Matrix3.rotationY(-30 * math.pi / 180));
 
   late _Matrix3 _transform = _baseTransform;
 
