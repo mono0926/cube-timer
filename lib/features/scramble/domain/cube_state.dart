@@ -99,26 +99,56 @@ class CubeState {
     }
 
     switch (faceChar) {
-      case 'U': applyMapping(_uMove, false); break;
-      case 'D': applyMapping(_dMove, false); break;
-      case 'F': applyMapping(_fMove, false); break;
-      case 'B': applyMapping(_bMove, false); break;
-      case 'R': applyMapping(_rMove, false); break;
-      case 'L': applyMapping(_lMove, false); break;
-      case 'M': applyMapping(_mMove, false); break;
-      case 'E': applyMapping(_eMove, false); break;
-      case 'S': applyMapping(_sMove, false); break;
-      
-      case 'u': applyMapping(_uMove, false); applyMapping(_eMove, true); break;
-      case 'd': applyMapping(_dMove, false); applyMapping(_eMove, false); break;
-      case 'f': applyMapping(_fMove, false); applyMapping(_sMove, false); break;
-      case 'b': applyMapping(_bMove, false); applyMapping(_sMove, true); break;
-      case 'r': applyMapping(_rMove, false); applyMapping(_mMove, true); break;
-      case 'l': applyMapping(_lMove, false); applyMapping(_mMove, false); break;
-      
-      case 'x': applyMapping(_rMove, false); applyMapping(_mMove, true); applyMapping(_lMove, true); break;
-      case 'y': applyMapping(_uMove, false); applyMapping(_eMove, true); applyMapping(_dMove, true); break;
-      case 'z': applyMapping(_fMove, false); applyMapping(_sMove, false); applyMapping(_bMove, true); break;
+      case 'U':
+        applyMapping(_uMove, false);
+      case 'D':
+        applyMapping(_dMove, false);
+      case 'F':
+        applyMapping(_fMove, false);
+      case 'B':
+        applyMapping(_bMove, false);
+      case 'R':
+        applyMapping(_rMove, false);
+      case 'L':
+        applyMapping(_lMove, false);
+      case 'M':
+        applyMapping(_mMove, false);
+      case 'E':
+        applyMapping(_eMove, false);
+      case 'S':
+        applyMapping(_sMove, false);
+
+      case 'u':
+        applyMapping(_uMove, false);
+        applyMapping(_eMove, true);
+      case 'd':
+        applyMapping(_dMove, false);
+        applyMapping(_eMove, false);
+      case 'f':
+        applyMapping(_fMove, false);
+        applyMapping(_sMove, false);
+      case 'b':
+        applyMapping(_bMove, false);
+        applyMapping(_sMove, true);
+      case 'r':
+        applyMapping(_rMove, false);
+        applyMapping(_mMove, true);
+      case 'l':
+        applyMapping(_lMove, false);
+        applyMapping(_mMove, false);
+
+      case 'x':
+        applyMapping(_rMove, false);
+        applyMapping(_mMove, true);
+        applyMapping(_lMove, true);
+      case 'y':
+        applyMapping(_uMove, false);
+        applyMapping(_eMove, true);
+        applyMapping(_dMove, true);
+      case 'z':
+        applyMapping(_fMove, false);
+        applyMapping(_sMove, false);
+        applyMapping(_bMove, true);
     }
 
     return newState;
@@ -133,343 +163,75 @@ class CubeState {
   }
 
   static const _uMove = [
-    6,
-    3,
-    0,
-    7,
-    4,
-    1,
-    8,
-    5,
-    2,
-    18,
-    19,
-    20,
-    12,
-    13,
-    14,
-    15,
-    16,
-    17,
-    36,
-    37,
-    38,
-    21,
-    22,
-    23,
-    24,
-    25,
-    26,
-    27,
-    28,
-    29,
-    30,
-    31,
-    32,
-    33,
-    34,
-    35,
-    45,
-    46,
-    47,
-    39,
-    40,
-    41,
-    42,
-    43,
-    44,
-    9,
-    10,
-    11,
-    48,
-    49,
-    50,
-    51,
-    52,
-    53,
+    6, 3, 0, 7, 4, 1, 8, 5, 2,
+    18, 19, 20, 12, 13, 14, 15, 16, 17,
+    36, 37, 38, 21, 22, 23, 24, 25, 26,
+    27, 28, 29, 30, 31, 32, 33, 34, 35,
+    45, 46, 47, 39, 40, 41, 42, 43, 44,
+    9, 10, 11, 48, 49, 50, 51, 52, 53,
   ];
   static const _dMove = [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    12,
-    13,
-    14,
-    51,
-    52,
-    53,
-    18,
-    19,
-    20,
-    21,
-    22,
-    23,
-    15,
-    16,
-    17,
-    33,
-    30,
-    27,
-    34,
-    31,
-    28,
-    35,
-    32,
-    29,
-    36,
-    37,
-    38,
-    39,
-    40,
-    41,
-    24,
-    25,
-    26,
-    45,
-    46,
-    47,
-    48,
-    49,
-    50,
-    42,
-    43,
-    44,
+    0, 1, 2, 3, 4, 5, 6, 7, 8,
+    9, 10, 11, 12, 13, 14, 51, 52, 53,
+    18, 19, 20, 21, 22, 23, 15, 16, 17,
+    33, 30, 27, 34, 31, 28, 35, 32, 29,
+    36, 37, 38, 39, 40, 41, 24, 25, 26,
+    45, 46, 47, 48, 49, 50, 42, 43, 44,
   ];
   static const _fMove = [
-    0,
-    1,
-    2,
-    3,
-    4,
-    5,
-    53,
-    50,
-    47,
-    15,
-    12,
-    9,
-    16,
-    13,
-    10,
-    17,
-    14,
-    11,
-    6,
-    19,
-    20,
-    7,
-    22,
-    23,
-    8,
-    25,
-    26,
-    24,
-    21,
-    18,
-    30,
-    31,
-    32,
-    33,
-    34,
-    35,
-    36,
-    37,
-    38,
-    39,
-    40,
-    41,
-    42,
-    43,
-    44,
-    45,
-    46,
-    27,
-    48,
-    49,
-    28,
-    51,
-    52,
-    29,
+    0, 1, 2, 3, 4, 5, 53, 50, 47,
+    15, 12, 9, 16, 13, 10, 17, 14, 11,
+    6, 19, 20, 7, 22, 23, 8, 25, 26,
+    24, 21, 18, 30, 31, 32, 33, 34, 35,
+    36, 37, 38, 39, 40, 41, 42, 43, 44,
+    45, 46, 27, 48, 49, 28, 51, 52, 29,
   ];
   static const _bMove = [
-    20,
-    23,
-    26,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    12,
-    13,
-    14,
-    15,
-    16,
-    17,
-    18,
-    19,
-    35,
-    21,
-    22,
-    34,
-    24,
-    25,
-    33,
-    27,
-    28,
-    29,
-    30,
-    31,
-    32,
-    45,
-    48,
-    51,
-    42,
-    39,
-    36,
-    43,
-    40,
-    37,
-    44,
-    41,
-    38,
-    2,
-    46,
-    47,
-    1,
-    49,
-    50,
-    0,
-    52,
-    53,
+    26, 23, 20, 3, 4, 5, 6, 7, 8,
+    9, 10, 11, 12, 13, 14, 15, 16, 17,
+    18, 19, 35, 21, 22, 34, 24, 25, 33,
+    27, 28, 29, 30, 31, 32, 45, 48, 51,
+    42, 39, 36, 43, 40, 37, 44, 41, 38,
+    0, 46, 47, 1, 49, 50, 2, 52, 53,
   ];
   static const _rMove = [
-    0,
-    1,
-    11,
-    3,
-    4,
-    14,
-    6,
-    7,
-    17,
-    9,
-    10,
-    29,
-    12,
-    13,
-    32,
-    15,
-    16,
-    35,
-    24,
-    21,
-    18,
-    25,
-    22,
-    19,
-    26,
-    23,
-    20,
-    27,
-    28,
-    42,
-    30,
-    31,
-    39,
-    33,
-    34,
-    36,
-    8,
-    37,
-    38,
-    5,
-    40,
-    41,
-    2,
-    43,
-    44,
-    45,
-    46,
-    47,
-    48,
-    49,
-    50,
-    51,
-    52,
-    53,
+    0, 1, 11, 3, 4, 14, 6, 7, 17,
+    9, 10, 29, 12, 13, 32, 15, 16, 35,
+    24, 21, 18, 25, 22, 19, 26, 23, 20,
+    27, 28, 42, 30, 31, 39, 33, 34, 36,
+    8, 37, 38, 5, 40, 41, 2, 43, 44,
+    45, 46, 47, 48, 49, 50, 51, 52, 53,
   ];
   static const _lMove = [
-    44,
-    1,
-    2,
-    41,
-    4,
-    5,
-    38,
-    7,
-    8,
-    0,
-    10,
-    11,
-    3,
-    13,
-    14,
-    6,
-    16,
-    17,
-    18,
-    19,
-    20,
-    21,
-    22,
-    23,
-    24,
-    25,
-    26,
-    9,
-    28,
-    29,
-    12,
-    31,
-    32,
-    15,
-    34,
-    35,
-    36,
-    37,
-    33,
-    39,
-    40,
-    30,
-    42,
-    43,
-    27,
-    51,
-    48,
-    45,
-    52,
-    49,
-    46,
-    53,
-    50,
-    47,
+    44, 1, 2, 41, 4, 5, 38, 7, 8,
+    0, 10, 11, 3, 13, 14, 6, 16, 17,
+    18, 19, 20, 21, 22, 23, 24, 25, 26,
+    9, 28, 29, 12, 31, 32, 15, 34, 35,
+    36, 37, 33, 39, 40, 30, 42, 43, 27,
+    51, 48, 45, 52, 49, 46, 53, 50, 47,
   ];
-
-  static const _mMove = [0, 43, 2, 3, 40, 5, 6, 37, 8, 9, 1, 11, 12, 4, 14, 15, 7, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 10, 29, 30, 13, 32, 33, 16, 35, 36, 34, 38, 39, 31, 41, 42, 28, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53];
-  static const _eMove = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 48, 49, 50, 15, 16, 17, 18, 19, 20, 12, 13, 14, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 21, 22, 23, 42, 43, 44, 45, 46, 47, 39, 40, 41, 51, 52, 53];
-  static const _sMove = [0, 1, 2, 52, 49, 46, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 3, 20, 21, 4, 23, 24, 5, 26, 27, 28, 29, 25, 22, 19, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 30, 47, 48, 31, 50, 51, 32, 53];
+  static const _mMove = [
+    0, 43, 2, 3, 40, 5, 6, 37, 8,
+    9, 1, 11, 12, 4, 14, 15, 7, 17,
+    18, 19, 20, 21, 22, 23, 24, 25, 26,
+    27, 10, 29, 30, 13, 32, 33, 16, 35,
+    36, 34, 38, 39, 31, 41, 42, 28, 44,
+    45, 46, 47, 48, 49, 50, 51, 52, 53,
+  ];
+  static const _eMove = [
+    0, 1, 2, 3, 4, 5, 6, 7, 8,
+    9, 10, 11, 48, 49, 50, 15, 16, 17,
+    18, 19, 20, 12, 13, 14, 24, 25, 26,
+    27, 28, 29, 30, 31, 32, 33, 34, 35,
+    36, 37, 38, 21, 22, 23, 42, 43, 44,
+    45, 46, 47, 39, 40, 41, 51, 52, 53,
+  ];
+  static const _sMove = [
+    0, 1, 2, 52, 49, 46, 6, 7, 8,
+    9, 10, 11, 12, 13, 14, 15, 16, 17,
+    18, 3, 20, 21, 4, 23, 24, 5, 26,
+    27, 28, 29, 25, 22, 19, 33, 34, 35,
+    36, 37, 38, 39, 40, 41, 42, 43, 44,
+    45, 30, 47, 48, 31, 50, 51, 32, 53,
+  ];
 }

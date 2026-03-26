@@ -19,7 +19,7 @@ class TypingGameState extends _$TypingGameState {
   // To support animation, we might want to apply moves one by one,
   // but for the Notifier state, we can just update the underlying state
   // and let the UI handle the animation queue.
-  // Actually, if we just update the state instantly, the UI won't know 
+  // Actually, if we just update the state instantly, the UI won't know
   // *what* move was applied to animate it.
   // So we need to expose the move queue or animate it here.
   // Since ScrambleVisualizer takes a CubeState, it's easier to let the game
@@ -30,7 +30,7 @@ class TypingGameState extends _$TypingGameState {
     }
     state = state.applyScramble(text);
   }
-  
+
   void applySingleMove(String move) {
     if (state.isSolved) {
       return;

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../domain/cube_state.dart';
 
@@ -21,7 +22,7 @@ class ScrambleVisualizer extends StatefulWidget {
   final VoidCallback? onToggle;
   final bool initialIs3D;
   final bool interactive;
-  
+
   final String? animatingMove;
   final double animationProgress;
 
@@ -32,7 +33,7 @@ class ScrambleVisualizer extends StatefulWidget {
 class ScrambleVisualizerState extends State<ScrambleVisualizer>
     with SingleTickerProviderStateMixin {
   late bool _internalIs3D = widget.initialIs3D;
-  
+
   static final _Matrix3 _baseTransform = _Matrix3.rotationX(
     -20 * math.pi / 180,
   ).multiply(_Matrix3.rotationY(-30 * math.pi / 180));
@@ -45,16 +46,17 @@ class ScrambleVisualizerState extends State<ScrambleVisualizer>
   @override
   void initState() {
     super.initState();
-    _snapController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    )..addListener(() {
-        if (_snapAnimation != null) {
-          setState(() {
-            _transform = _snapAnimation!.value;
-          });
-        }
-      });
+    _snapController =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 300),
+        )..addListener(() {
+          if (_snapAnimation != null) {
+            setState(() {
+              _transform = _snapAnimation!.value;
+            });
+          }
+        });
   }
 
   @override
@@ -122,21 +124,32 @@ class ScrambleVisualizerState extends State<ScrambleVisualizer>
             ),
           ),
         ),
+        // Move Overlay
+        if (widget.animatingMove != null && widget.animatingMove!.isNotEmpty)
+          IgnorePointer(
+            child: Center(
+              child: _MoveOverlay(
+                move: widget.animatingMove!,
+                progress: widget.animationProgress,
+              ),
+            ),
+          ),
         if (_currentIs3D && widget.interactive)
           Positioned(
             right: 8,
             bottom: 8,
             child: TextButton.icon(
               onPressed: () {
-                _snapAnimation = _Matrix3Tween(
-                  begin: _transform,
-                  end: _baseTransform,
-                ).animate(
-                  CurvedAnimation(
-                    parent: _snapController,
-                    curve: Curves.easeOut,
-                  ),
-                );
+                _snapAnimation =
+                    _Matrix3Tween(
+                      begin: _transform,
+                      end: _baseTransform,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: _snapController,
+                        curve: Curves.easeOut,
+                      ),
+                    );
                 _snapController.forward(from: 0);
               },
               icon: const Icon(Icons.center_focus_strong, size: 16),
@@ -180,14 +193,27 @@ class ScrambleVisualizerState extends State<ScrambleVisualizer>
             x.x * y.y - x.y * y.x,
           );
           final r = _Matrix3([
-            x.x, y.x, z.x,
-            x.y, y.y, z.y,
-            x.z, y.z, z.z,
+            x.x,
+            y.x,
+            z.x,
+            x.y,
+            y.y,
+            z.y,
+            x.z,
+            y.z,
+            z.z,
           ]);
           final target = _baseTransform.multiply(r);
-          final dot = cur.m[0] * target.m[0] + cur.m[1] * target.m[1] + cur.m[2] * target.m[2] +
-                      cur.m[3] * target.m[3] + cur.m[4] * target.m[4] + cur.m[5] * target.m[5] +
-                      cur.m[6] * target.m[6] + cur.m[7] * target.m[7] + cur.m[8] * target.m[8];
+          final dot =
+              cur.m[0] * target.m[0] +
+              cur.m[1] * target.m[1] +
+              cur.m[2] * target.m[2] +
+              cur.m[3] * target.m[3] +
+              cur.m[4] * target.m[4] +
+              cur.m[5] * target.m[5] +
+              cur.m[6] * target.m[6] +
+              cur.m[7] * target.m[7] +
+              cur.m[8] * target.m[8];
           if (dot > maxDot) {
             maxDot = dot;
             bestTarget = target;
@@ -196,213 +222,103 @@ class ScrambleVisualizerState extends State<ScrambleVisualizer>
       }
     }
 
-    _snapAnimation = _Matrix3Tween(
-      begin: _transform,
-      end: bestTarget,
-    ).animate(
-      CurvedAnimation(
-        parent: _snapController,
-        curve: Curves.easeOutCubic,
-      ),
-    );
+    _snapAnimation =
+        _Matrix3Tween(
+          begin: _transform,
+          end: bestTarget,
+        ).animate(
+          CurvedAnimation(
+            parent: _snapController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
     _snapController.forward(from: 0);
   }
 
-  Map<Face, Face> _getViewMapping() {
-    final frontBias = const _Vector3(-0.1, 0.1, 1);
-    Face bestFront = Face.f;
-    double maxFrontDot = -2.0;
-
-    for (final faceDef in _FaceDef.faces) {
-      final wNorm = _transform.transform(faceDef.normal);
-      if (wNorm.z < -0.1) continue; 
-      final dot = wNorm.x * frontBias.x + wNorm.y * frontBias.y + wNorm.z * frontBias.z;
-      if (dot > maxFrontDot) {
-        maxFrontDot = dot;
-        bestFront = faceDef.face;
-      }
-    }
-
-    final upBias = const _Vector3(0, -1, -0.1);
-    Face bestUp = Face.u;
-    double maxUpDot = -2.0;
-    
-    final frontLogicalNormal = _FaceDef.faces.firstWhere((e) => e.face == bestFront).normal;
-
-    for (final faceDef in _FaceDef.faces) {
-      if (faceDef.face == bestFront || faceDef.normal.dot(frontLogicalNormal).abs() > 0.5) continue; 
-      final wNorm = _transform.transform(faceDef.normal);
-      final dot = wNorm.x * upBias.x + wNorm.y * upBias.y + wNorm.z * upBias.z;
-      if (dot > maxUpDot) {
-        maxUpDot = dot;
-        bestUp = faceDef.face;
-      }
-    }
-
-    final upLogicalNormal = _FaceDef.faces.firstWhere((e) => e.face == bestUp).normal;
-    final rightNormal = frontLogicalNormal.cross(upLogicalNormal);
-
-    Face bestRight = Face.r;
-    for (final faceDef in _FaceDef.faces) {
-      if (faceDef.normal.dot(rightNormal) > 0.9) bestRight = faceDef.face;
-    }
-    
-    Face getOpposite(Face f) {
-      switch (f) {
-        case Face.u: return Face.d;
-        case Face.d: return Face.u;
-        case Face.f: return Face.b;
-        case Face.b: return Face.f;
-        case Face.r: return Face.l;
-        case Face.l: return Face.r;
-      }
-    }
-
-    return {
-      Face.f: bestFront,
-      Face.b: getOpposite(bestFront),
-      Face.u: bestUp,
-      Face.d: getOpposite(bestUp),
-      Face.r: bestRight,
-      Face.l: getOpposite(bestRight),
-    };
-  }
-
   String resolveLogicalMove(String move) {
-    if (move.isEmpty) return move;
+    if (move.isEmpty) {
+      return move;
+    }
 
-    // Handle algorithms
     final lowerMove = move.toLowerCase();
     if (lowerMove == 'sexy') {
-      return [
-        resolveLogicalMove('R'),
-        resolveLogicalMove('U'),
-        resolveLogicalMove('R\''),
-        resolveLogicalMove('U\''),
-      ].join(' ');
+      return "R U R' U'";
     }
-    if (lowerMove == 'sexy\'' || lowerMove == 'invsexy' || lowerMove == 'unsexy') {
-      return [
-        resolveLogicalMove('U'),
-        resolveLogicalMove('R'),
-        resolveLogicalMove('U\''),
-        resolveLogicalMove('R\''),
-      ].join(' ');
+    if (lowerMove == 'sexy\'' ||
+        lowerMove == 'invsexy' ||
+        lowerMove == 'unsexy') {
+      return "U R U' R'";
     }
     if (lowerMove == 'sune') {
-      return [
-        resolveLogicalMove('R'),
-        resolveLogicalMove('U'),
-        resolveLogicalMove('R\''),
-        resolveLogicalMove('U'),
-        resolveLogicalMove('R'),
-        resolveLogicalMove('U2'),
-        resolveLogicalMove('R\''),
-      ].join(' ');
+      return "R U R' U R U2 R'";
     }
     if (lowerMove == 'antisune') {
-      return [
-        resolveLogicalMove('R'),
-        resolveLogicalMove('U2'),
-        resolveLogicalMove('R\''),
-        resolveLogicalMove('U\''),
-        resolveLogicalMove('R'),
-        resolveLogicalMove('U\''),
-        resolveLogicalMove('R\''),
-      ].join(' ');
-    }
-    final mainChar = move[0];
-    final upperChar = mainChar.toUpperCase();
-    final validChars = ['U', 'D', 'F', 'B', 'R', 'L', 'M', 'E', 'S', 'X', 'Y', 'Z'];
-    if (!validChars.contains(upperChar)) return move;
-    
-    final vm = _getViewMapping();
-
-    if (['U', 'D', 'F', 'B', 'R', 'L'].contains(upperChar)) {
-      Face mappedFace;
-      switch (upperChar) {
-        case 'U': mappedFace = vm[Face.u]!; break;
-        case 'D': mappedFace = vm[Face.d]!; break;
-        case 'F': mappedFace = vm[Face.f]!; break;
-        case 'B': mappedFace = vm[Face.b]!; break;
-        case 'R': mappedFace = vm[Face.r]!; break;
-        case 'L': mappedFace = vm[Face.l]!; break;
-        default: mappedFace = Face.f;
-      }
-
-      String mappedFaceChar = mappedFace.name.toUpperCase();
-
-      if (mainChar.toLowerCase() == mainChar) {
-        mappedFaceChar = mappedFaceChar.toLowerCase();
-      }
-      
-      if (move.length > 1 && move[1] == 'w') {
-        mappedFaceChar = mappedFaceChar.toLowerCase();
-        return mappedFaceChar + move.substring(2);
-      }
-
-      if (move.length > 1) {
-        return mappedFaceChar + move.substring(1);
-      }
-      return mappedFaceChar;
-    }
-    
-    if (['M', 'E', 'S'].contains(upperChar)) {
-      String mappedChar;
-      bool isPrimed = false;
-      Face targetFace;
-      if (upperChar == 'M') targetFace = vm[Face.l]!;
-      else if (upperChar == 'E') targetFace = vm[Face.d]!;
-      else targetFace = vm[Face.f]!;
-
-      switch (targetFace) {
-        case Face.u: mappedChar = 'E'; isPrimed = true; break;
-        case Face.d: mappedChar = 'E'; isPrimed = false; break;
-        case Face.f: mappedChar = 'S'; isPrimed = false; break;
-        case Face.b: mappedChar = 'S'; isPrimed = true; break;
-        case Face.r: mappedChar = 'M'; isPrimed = true; break;
-        case Face.l: mappedChar = 'M'; isPrimed = false; break;
-      }
-      final modifier = move.length > 1 ? move.substring(1) : '';
-      return _combineModifiers(mappedChar, isPrimed, modifier);
-    }
-    
-    if (['X', 'Y', 'Z'].contains(upperChar)) {
-      String mappedChar;
-      bool isPrimed = false;
-      Face targetFace;
-      if (upperChar == 'X') targetFace = vm[Face.r]!;
-      else if (upperChar == 'Y') targetFace = vm[Face.u]!;
-      else targetFace = vm[Face.f]!;
-
-      switch (targetFace) {
-        case Face.u: mappedChar = 'Y'; isPrimed = false; break;
-        case Face.d: mappedChar = 'Y'; isPrimed = true; break;
-        case Face.f: mappedChar = 'Z'; isPrimed = false; break;
-        case Face.b: mappedChar = 'Z'; isPrimed = true; break;
-        case Face.r: mappedChar = 'X'; isPrimed = false; break;
-        case Face.l: mappedChar = 'X'; isPrimed = true; break;
-      }
-      if (mainChar.toLowerCase() == mainChar) {
-        mappedChar = mappedChar.toLowerCase();
-      }
-      final modifier = move.length > 1 ? move.substring(1) : '';
-      return _combineModifiers(mappedChar, isPrimed, modifier);
+      return "R U2 R' U' R U' R'";
     }
 
     return move;
   }
+}
 
-  String _combineModifiers(String baseChar, bool isPrimedBase, String modifier) {
-    bool hasDouble = modifier.contains('2');
-    bool hasPrime = modifier.contains("'");
-    
-    if (hasDouble) return '${baseChar}2';
-    
-    // The final polarity is XOR of isPrimedBase and hasPrime
-    bool finalPrime = isPrimedBase != hasPrime;
-    if (finalPrime) return "$baseChar'";
-    return baseChar;
+class _MoveOverlay extends StatelessWidget {
+  const _MoveOverlay({
+    required this.move,
+    required this.progress,
+  });
+
+  final String move;
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    // Calculate animation values
+    // Initial jump: 0.0 -> 0.2 (fade in and scale up fast)
+    // Main: 0.2 -> 0.8 (stay and slight drift)
+    // End: 0.8 -> 1.0 (fade out and scale up)
+
+    var opacity = 1.0;
+    var scale = 1.0;
+    var translateZ = 0.0;
+
+    if (progress < 0.2) {
+      final t = progress / 0.2;
+      opacity = Curves.easeInOutQuart.transform(t);
+      scale = 0.5 + 0.5 * Curves.easeOutBack.transform(t);
+    } else if (progress > 0.8) {
+      final t = (progress - 0.8) / 0.2;
+      opacity = 1.0 - Curves.easeInOutQuart.transform(t);
+      scale = 1.0 + 0.5 * Curves.easeInOutQuart.transform(t);
+      translateZ = 50 * Curves.easeInOutQuart.transform(t);
+    }
+
+    return Transform(
+      transform: Matrix4.identity()
+        ..setEntry(3, 2, 0.001)
+        ..translateByDouble(0, 0, translateZ, 1)
+        ..scaleByDouble(scale, scale, scale, 1),
+      alignment: Alignment.center,
+      child: Opacity(
+        opacity: opacity,
+        child: Text(
+          move,
+          style: GoogleFonts.audiowide(
+            fontSize: 100,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            shadows: [
+              const Shadow(
+                color: Colors.purpleAccent,
+                blurRadius: 20,
+              ),
+              const Shadow(
+                color: Colors.blueAccent,
+                blurRadius: 40,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -411,9 +327,13 @@ class _Matrix3Tween extends Tween<_Matrix3> {
 
   @override
   _Matrix3 lerp(double t) {
-    if (t == 0) return begin!;
-    if (t == 1) return end!;
-    
+    if (t == 0) {
+      return begin!;
+    }
+    if (t == 1) {
+      return end!;
+    }
+
     final m = List<double>.generate(9, (i) {
       return begin!.m[i] + (end!.m[i] - begin!.m[i]) * t;
     });
@@ -490,11 +410,11 @@ class _CubePainter extends CustomPainter {
       ..drawRect(
         Rect.fromLTWH(offsetX + faceSize, offsetY, faceSize, faceSize),
         bgPaint,
-      ) 
+      )
       ..drawRect(
         Rect.fromLTWH(offsetX, offsetY + faceSize, faceSize * 4, faceSize),
         bgPaint,
-      ) 
+      )
       ..drawRect(
         Rect.fromLTWH(
           offsetX + faceSize,
@@ -578,84 +498,138 @@ class _CubePainter extends CustomPainter {
     const viewDir = _Vector3(0, 0, 1);
 
     final activeStickers = <_StickerRender>[];
-    
+
     // Parse animation move
     _Matrix3? sliceAnimTransform;
     bool Function(Face face, int r, int c)? isAnimatingSticker;
-    
-    if (animatingMove != null && animatingMove!.isNotEmpty && animationProgress > 0) {
+
+    if (animatingMove != null &&
+        animatingMove!.isNotEmpty &&
+        animationProgress > 0) {
       final charStr = animatingMove![0];
-      final isWide = charStr.toLowerCase() == charStr || (animatingMove!.length > 1 && animatingMove![1] == 'w');
+      final isWide =
+          charStr.toLowerCase() == charStr ||
+          (animatingMove!.length > 1 && animatingMove![1] == 'w');
       final faceChar = charStr.toUpperCase();
-      final modifier = animatingMove!.length > 1 && animatingMove![1] == 'w' 
+      final modifier = animatingMove!.length > 1 && animatingMove![1] == 'w'
           ? (animatingMove!.length > 2 ? animatingMove!.substring(2) : '')
           : (animatingMove!.length > 1 ? animatingMove!.substring(1) : '');
-      
+
       var angleTarget = math.pi / 2; // 90 degrees clockwise for face
       if (modifier.contains("'")) {
         angleTarget = -math.pi / 2;
       } else if (modifier.contains('2')) {
         angleTarget = math.pi;
       }
-      
+
       final currentAngle = angleTarget * animationProgress;
-      
+
       switch (faceChar) {
         case 'U':
           sliceAnimTransform = _Matrix3.rotationY(-currentAngle);
-          isAnimatingSticker = (f, r, c) => f == Face.u || (f != Face.d && r == 0) || (isWide && f != Face.d && r == 1);
+          isAnimatingSticker = (f, r, c) =>
+              f == Face.u ||
+              (f != Face.d && r == 0) ||
+              (isWide && f != Face.d && r == 1);
         case 'D':
           sliceAnimTransform = _Matrix3.rotationY(currentAngle);
-          isAnimatingSticker = (f, r, c) => f == Face.d || (f != Face.u && r == 2) || (isWide && f != Face.u && r == 1);
+          isAnimatingSticker = (f, r, c) =>
+              f == Face.d ||
+              (f != Face.u && r == 2) ||
+              (isWide && f != Face.u && r == 1);
         case 'R':
           sliceAnimTransform = _Matrix3.rotationX(currentAngle);
           isAnimatingSticker = (f, r, c) {
-            if (f == Face.r) return true;
-            if (f == Face.u || f == Face.f || f == Face.d) return c == 2 || (isWide && c == 1);
-            if (f == Face.b) return c == 0 || (isWide && c == 1);
+            if (f == Face.r) {
+              return true;
+            }
+            if (f == Face.u || f == Face.f || f == Face.d) {
+              return c == 2 || (isWide && c == 1);
+            }
+            if (f == Face.b) {
+              return c == 0 || (isWide && c == 1);
+            }
             return false;
           };
         case 'L':
           sliceAnimTransform = _Matrix3.rotationX(-currentAngle);
           isAnimatingSticker = (f, r, c) {
-            if (f == Face.l) return true;
-            if (f == Face.u || f == Face.f || f == Face.d) return c == 0 || (isWide && c == 1);
-            if (f == Face.b) return c == 2 || (isWide && c == 1);
+            if (f == Face.l) {
+              return true;
+            }
+            if (f == Face.u || f == Face.f || f == Face.d) {
+              return c == 0 || (isWide && c == 1);
+            }
+            if (f == Face.b) {
+              return c == 2 || (isWide && c == 1);
+            }
             return false;
           };
         case 'F':
           sliceAnimTransform = _Matrix3.rotationZ(currentAngle);
           isAnimatingSticker = (f, r, c) {
-            if (f == Face.f) return true;
-            if (f == Face.u) return r == 2 || (isWide && r == 1);
-            if (f == Face.d) return r == 0 || (isWide && r == 1);
-            if (f == Face.r) return c == 0 || (isWide && c == 1);
-            if (f == Face.l) return c == 2 || (isWide && c == 1);
+            if (f == Face.f) {
+              return true;
+            }
+            if (f == Face.u) {
+              return r == 2 || (isWide && r == 1);
+            }
+            if (f == Face.d) {
+              return r == 0 || (isWide && r == 1);
+            }
+            if (f == Face.r) {
+              return c == 0 || (isWide && c == 1);
+            }
+            if (f == Face.l) {
+              return c == 2 || (isWide && c == 1);
+            }
             return false;
           };
         case 'B':
           sliceAnimTransform = _Matrix3.rotationZ(-currentAngle);
           isAnimatingSticker = (f, r, c) {
-            if (f == Face.b) return true;
-            if (f == Face.u) return r == 0 || (isWide && r == 1);
-            if (f == Face.d) return r == 2 || (isWide && r == 1);
-            if (f == Face.r) return c == 2 || (isWide && c == 1);
-            if (f == Face.l) return c == 0 || (isWide && c == 1);
+            if (f == Face.b) {
+              return true;
+            }
+            if (f == Face.u) {
+              return r == 0 || (isWide && r == 1);
+            }
+            if (f == Face.d) {
+              return r == 2 || (isWide && r == 1);
+            }
+            if (f == Face.r) {
+              return c == 2 || (isWide && c == 1);
+            }
+            if (f == Face.l) {
+              return c == 0 || (isWide && c == 1);
+            }
             return false;
           };
         case 'M':
           sliceAnimTransform = _Matrix3.rotationX(-currentAngle);
-          isAnimatingSticker = (f, r, c) => (f == Face.u || f == Face.f || f == Face.d || f == Face.b) && c == 1;
+          isAnimatingSticker = (f, r, c) =>
+              (f == Face.u || f == Face.f || f == Face.d || f == Face.b) &&
+              c == 1;
         case 'E':
           sliceAnimTransform = _Matrix3.rotationY(currentAngle);
-          isAnimatingSticker = (f, r, c) => (f == Face.f || f == Face.r || f == Face.b || f == Face.l) && r == 1;
+          isAnimatingSticker = (f, r, c) =>
+              (f == Face.f || f == Face.r || f == Face.b || f == Face.l) &&
+              r == 1;
         case 'S':
           sliceAnimTransform = _Matrix3.rotationZ(currentAngle);
           isAnimatingSticker = (f, r, c) {
-            if (f == Face.u) return r == 1;
-            if (f == Face.d) return r == 1;
-            if (f == Face.r) return c == 1;
-            if (f == Face.l) return c == 1;
+            if (f == Face.u) {
+              return r == 1;
+            }
+            if (f == Face.d) {
+              return r == 1;
+            }
+            if (f == Face.r) {
+              return c == 1;
+            }
+            if (f == Face.l) {
+              return c == 1;
+            }
             return false;
           };
         case 'X':
@@ -674,15 +648,17 @@ class _CubePainter extends CustomPainter {
       final startIdx = face.face.index * 9;
       for (var r = 0; r < 3; r++) {
         for (var c = 0; c < 3; c++) {
-          var origin =
+          final origin =
               face.origin + face.uDir * c.toDouble() + face.vDir * r.toDouble();
           var p1 = origin;
           var p2 = origin + face.uDir;
           var p3 = origin + face.uDir + face.vDir;
           var p4 = origin + face.vDir;
           var normal = face.normal;
-          
-          if (isAnimatingSticker != null && isAnimatingSticker(face.face, r, c) && sliceAnimTransform != null) {
+
+          if (isAnimatingSticker != null &&
+              isAnimatingSticker(face.face, r, c) &&
+              sliceAnimTransform != null) {
             p1 = sliceAnimTransform.transform(p1);
             p2 = sliceAnimTransform.transform(p2);
             p3 = sliceAnimTransform.transform(p3);
@@ -695,11 +671,12 @@ class _CubePainter extends CustomPainter {
           p3 = transform.transform(p3);
           p4 = transform.transform(p4);
           normal = transform.transform(normal);
-          
+
           final center = (p1 + p2 + p3 + p4) * 0.25;
-          
+
           if (normal.dot(viewDir) > -0.1) {
-            final color = cubeState.stickers[startIdx + r * 3 + c].materialColor;
+            final color =
+                cubeState.stickers[startIdx + r * 3 + c].materialColor;
             activeStickers.add(_StickerRender(p1, p2, p3, p4, center.z, color));
           }
         }
@@ -817,19 +794,25 @@ class _Matrix3 {
       m[6] * v.x + m[7] * v.y + m[8] * v.z,
     );
   }
-  
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _Matrix3 && runtimeType == other.runtimeType && _listEquals(m, other.m);
+      other is _Matrix3 &&
+          runtimeType == other.runtimeType &&
+          _listEquals(m, other.m);
 
   @override
   int get hashCode => m.hashCode;
-  
+
   bool _listEquals(List<double> a, List<double> b) {
-    if (a.length != b.length) return false;
+    if (a.length != b.length) {
+      return false;
+    }
     for (var i = 0; i < a.length; i++) {
-        if (a[i] != b[i]) return false;
+      if (a[i] != b[i]) {
+        return false;
+      }
     }
     return true;
   }

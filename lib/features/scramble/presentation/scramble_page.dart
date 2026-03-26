@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
@@ -33,13 +34,13 @@ class ScramblePage extends HookWidget {
     final pulseController = useAnimationController(
       duration: const Duration(milliseconds: 800),
     )..repeat();
-    
+
     final isPreparing = useState(false);
 
     final animation = useMemoized(
       () => CurvedAnimation(
         parent: animationController,
-        curve: Curves.easeInOut,
+        curve: Curves.easeInOutQuart,
       ),
       [animationController],
     );
@@ -56,7 +57,8 @@ class ScramblePage extends HookWidget {
         return solvedState;
       }
       var state = solvedState;
-      // When animating, we display the cube state up to the move BEFORE the currently animating one
+      // When animating, we display the cube state up to the move BEFORE
+      // the currently animating one
       for (var i = 0; i < currentMoveIndex.value; i++) {
         state = state.applyScramble(moves[i]);
       }
@@ -74,7 +76,7 @@ class ScramblePage extends HookWidget {
       if (status == AnimationStatus.completed) {
         if (currentMoveIndex.value < moves.length - 1) {
           currentMoveIndex.value++;
-          animationController.forward(from: 0);
+          unawaited(animationController.forward(from: 0));
         } else {
           // Finished all moves
           isPlaying.value = false;
@@ -94,18 +96,22 @@ class ScramblePage extends HookWidget {
     final isLandscape = orientation == Orientation.landscape;
 
     Future<void> startPlayback() async {
-      if (isPreparing.value) return;
-      
+      if (isPreparing.value) {
+        return;
+      }
+
       isPreparing.value = true;
-      currentMoveIndex.value = -1; // Specific state to show solved cube during preparation
-      
+      currentMoveIndex.value = -1;
+
       await Future<void>.delayed(const Duration(milliseconds: 800));
-      
-      if (!isPlaying.value) return; // In case it was stopped during delay
-      
+
+      if (!isPlaying.value) {
+        return;
+      }
+
       isPreparing.value = false;
       currentMoveIndex.value = 0;
-      animationController.forward(from: 0);
+      unawaited(animationController.forward(from: 0));
     }
 
     void stopPlayback() {
@@ -181,21 +187,61 @@ class ScramblePage extends HookWidget {
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
-                                  child: AnimatedDefaultTextStyle(
-                                    duration: const Duration(milliseconds: 300),
-                                    style: theme.textTheme.titleLarge!.copyWith(
-                                      color: Colors.white,
-                                      shadows: [
-                                        const BoxShadow(
-                                          color: Colors.purpleAccent,
-                                          blurRadius: 10,
+                                  child: Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: List.generate(moves.length, (
+                                      index,
+                                    ) {
+                                      final isActive =
+                                          isPlaying.value &&
+                                          index == currentMoveIndex.value;
+                                      final isDone =
+                                          isPlaying.value &&
+                                          index < currentMoveIndex.value;
+
+                                      return AnimatedContainer(
+                                        duration: const Duration(
+                                          milliseconds: 300,
                                         ),
-                                      ],
-                                    ),
-                                    child: Text(
-                                      scramble.value,
-                                      textAlign: TextAlign.left,
-                                    ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: isActive
+                                              ? Colors.purpleAccent
+                                              : (isDone
+                                                    ? Colors.white12
+                                                    : Colors.transparent),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                          boxShadow: isActive
+                                              ? [
+                                                  const BoxShadow(
+                                                    color: Colors.purpleAccent,
+                                                    blurRadius: 10,
+                                                  ),
+                                                ]
+                                              : null,
+                                        ),
+                                        child: Text(
+                                          moves[index],
+                                          style: theme.textTheme.headlineSmall!
+                                              .copyWith(
+                                                color: isActive
+                                                    ? Colors.white
+                                                    : (isDone
+                                                          ? Colors.white38
+                                                          : Colors.white70),
+                                                fontWeight: FontWeight.bold,
+                                                fontFamily: 'Chivo Mono',
+                                                letterSpacing: 1.2,
+                                              ),
+                                        ),
+                                      );
+                                    }),
                                   ),
                                 ),
                               ],
@@ -227,14 +273,21 @@ class ScramblePage extends HookWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(32),
                         child: AnimatedBuilder(
-                          animation: Listenable.merge([animationController, pulseController]),
+                          animation: Listenable.merge([
+                            animationController,
+                            pulseController,
+                          ]),
                           builder: (context, _) {
                             // Pulse effect during preparation
-                            double scale = 1.0;
+                            double scale = 1;
                             if (isPreparing.value) {
-                              // Use pulseController value for a smooth sine-like pulse
-                              final curve = Curves.easeInOut.transform(pulseController.value);
-                              scale = 1.0 + 0.05 * (1.0 - (curve - 0.5).abs() * 2);
+                              // Use pulseController value for a smooth
+                              // sine-like pulse
+                              final curve = Curves.easeInOutQuart.transform(
+                                pulseController.value,
+                              );
+                              scale =
+                                  1.0 + 0.05 * (1.0 - (curve - 0.5).abs() * 2);
                             }
 
                             return Transform.scale(
@@ -261,34 +314,71 @@ class ScramblePage extends HookWidget {
                         horizontal: 24,
                         vertical: 16,
                       ),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             SizedBox(
-                              height: 75,
-                              width: 75,
+                              height: 60,
+                              width: 60,
                               child: ScrambleVisualizer(
                                 cubeState: solvedState,
                                 interactive: false,
                               ),
                             ),
-                            const SizedBox(width: 16),
-                            AnimatedDefaultTextStyle(
-                              duration: const Duration(milliseconds: 300),
-                              style: theme.textTheme.headlineSmall!.copyWith(
-                                color: Colors.white,
-                                shadows: [
-                                  const BoxShadow(
-                                    color: Colors.purpleAccent,
-                                    blurRadius: 10,
-                                  ),
-                                ],
-                              ),
-                              child: Text(
-                                scramble.value,
-                                textAlign: TextAlign.center,
+                            const SizedBox(width: 12),
+                            Flexible(
+                              child: Wrap(
+                                alignment: WrapAlignment.center,
+                                spacing: 6,
+                                runSpacing: 6,
+                                children: List.generate(moves.length, (index) {
+                                  final isActive =
+                                      isPlaying.value &&
+                                      index == currentMoveIndex.value;
+                                  final isDone =
+                                      isPlaying.value &&
+                                      index < currentMoveIndex.value;
+
+                                  return AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isActive
+                                          ? Colors.purpleAccent
+                                          : (isDone
+                                                ? Colors.white12
+                                                : Colors.transparent),
+                                      borderRadius: BorderRadius.circular(4),
+                                      boxShadow: isActive
+                                          ? [
+                                              const BoxShadow(
+                                                color: Colors.purpleAccent,
+                                                blurRadius: 8,
+                                              ),
+                                            ]
+                                          : null,
+                                    ),
+                                    child: Text(
+                                      moves[index],
+                                      style: theme.textTheme.titleLarge!
+                                          .copyWith(
+                                            color: isActive
+                                                ? Colors.white
+                                                : (isDone
+                                                      ? Colors.white38
+                                                      : Colors.white70),
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Chivo Mono',
+                                            letterSpacing: 1.1,
+                                          ),
+                                    ),
+                                  );
+                                }),
                               ),
                             ),
                           ],
@@ -301,13 +391,18 @@ class ScramblePage extends HookWidget {
                       child: Padding(
                         padding: const EdgeInsets.all(32),
                         child: AnimatedBuilder(
-                          animation: Listenable.merge([animationController, pulseController]),
+                          animation: Listenable.merge([
+                            animationController,
+                            pulseController,
+                          ]),
                           builder: (context, _) {
-                            // Pulse effect during preparation
-                            double scale = 1.0;
+                            double scale = 1;
                             if (isPreparing.value) {
-                              final curve = Curves.easeInOut.transform(pulseController.value);
-                              scale = 1.0 + 0.05 * (1.0 - (curve - 0.5).abs() * 2);
+                              final curve = Curves.easeInOutQuart.transform(
+                                pulseController.value,
+                              );
+                              scale =
+                                  1.0 + 0.05 * (1.0 - (curve - 0.5).abs() * 2);
                             }
 
                             return Transform.scale(

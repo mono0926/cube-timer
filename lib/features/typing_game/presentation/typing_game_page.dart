@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../scramble/presentation/scramble_visualizer.dart';
@@ -18,22 +19,33 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
   final GlobalKey<ScrambleVisualizerState> _visualizerKey = GlobalKey();
 
   late AnimationController _animationController;
+  late Animation<double> _curvedAnimation;
   final List<String> _moveQueue = [];
   bool _isAnimating = false;
   String? _currentMove;
   bool _isCheatSheetPinned = false;
 
+  // Track the current sequence for commands or multi-move inputs
+  List<String> _currentSequence = [];
+  int _sequenceIndex = -1;
+  String? _sequenceLabel; // e.g. "sexy"
+
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    )..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          _onMoveAnimationComplete();
-        }
-      });
+    _animationController =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 400),
+        )..addStatusListener((status) {
+          if (status == AnimationStatus.completed) {
+            _onMoveAnimationComplete();
+          }
+        });
+    _curvedAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOutQuart,
+    );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
@@ -55,15 +67,24 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
     }
 
     final rawTyped = value.trim();
-    final resolved = _visualizerKey.currentState?.resolveLogicalMove(rawTyped) ?? rawTyped;
-    final moves = resolved.split(RegExp(r'\s+'));
-    for (final m in moves) {
-      if (m.isNotEmpty) {
-        _moveQueue.add(m);
-      }
+    final resolved =
+        _visualizerKey.currentState?.resolveLogicalMove(rawTyped) ?? rawTyped;
+    final moves = resolved.split(RegExp(r'\s+')).where((m) => m.isNotEmpty).toList();
+
+    if (rawTyped != resolved) {
+      // It's a command
+      _currentSequence = moves;
+      _sequenceIndex = 0;
+      _sequenceLabel = rawTyped;
+    } else {
+      _currentSequence = [];
+      _sequenceIndex = -1;
+      _sequenceLabel = null;
     }
+
+    _moveQueue.addAll(moves);
     _textController.clear();
-    
+
     if (!_isAnimating) {
       _processNextMove();
     }
@@ -74,8 +95,11 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
     if (_moveQueue.isEmpty) {
       _isAnimating = false;
       _currentMove = null;
+      _currentSequence = [];
+      _sequenceIndex = -1;
+      _sequenceLabel = null;
       setState(() {});
-      
+
       final state = ref.read(typingGameStateProvider);
       if (state.isSolved) {
         _showClearDialog();
@@ -86,16 +110,47 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
     _isAnimating = true;
     _currentMove = _moveQueue.removeAt(0);
 
-    final faceChar = _currentMove!.isNotEmpty ? _currentMove![0].toUpperCase() : '';
-    if (!['U', 'D', 'F', 'B', 'R', 'L', 'M', 'E', 'S', 'X', 'Y', 'Z'].contains(faceChar)) {
+    if (_currentSequence.isNotEmpty) {
+      _sequenceIndex = _currentSequence.length - _moveQueue.length - 1;
+      // If we finished the sequence, clear it
+      if (_sequenceIndex >= _currentSequence.length) {
+        _currentSequence = [];
+        _sequenceIndex = -1;
+        _sequenceLabel = null;
+      }
+    }
+
+    final move = _currentMove!;
+    final faceChar = move.isNotEmpty ? move[0].toUpperCase() : '';
+    final validFaces = [
+      'U',
+      'D',
+      'F',
+      'B',
+      'R',
+      'L',
+      'M',
+      'E',
+      'S',
+      'X',
+      'Y',
+      'Z',
+    ];
+    if (!validFaces.contains(faceChar)) {
       // Invalid move, skip without animation
-      // However, we still apply it just in case logic updates (it won't do much)
-      ref.read(typingGameStateProvider.notifier).applySingleMove(_currentMove!);
+      ref.read(typingGameStateProvider.notifier).applySingleMove(move);
       _processNextMove();
       return;
     }
 
+    // Adjust duration for double moves (e.g. R2)
+    final isDoubleMove = move.contains('2');
+    _animationController.duration = Duration(
+      milliseconds: isDoubleMove ? 800 : 400,
+    );
+
     _animationController.forward(from: 0);
+    HapticFeedback.lightImpact();
     setState(() {});
   }
 
@@ -104,7 +159,7 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
     if (_currentMove != null) {
       ref.read(typingGameStateProvider.notifier).applySingleMove(_currentMove!);
     }
-    
+
     // Process next in queue
     _processNextMove();
   }
@@ -149,13 +204,18 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
                           key: _visualizerKey,
                           cubeState: state,
                           animatingMove: _isAnimating ? _currentMove : null,
-                          animationProgress: _animationController.value,
+                          animationProgress: _curvedAnimation.value,
                         );
                       },
                     ),
                   ),
                 ),
-                if (!_isCheatSheetPinned) 
+                if (_currentSequence.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: _buildSequenceDisplay(),
+                  ),
+                if (!_isCheatSheetPinned)
                   Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 400),
@@ -202,13 +262,15 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
           ),
         ],
       ),
-      floatingActionButton: _isCheatSheetPinned ? null : FloatingActionButton.extended(
-        onPressed: _showCheatSheet,
-        icon: const Icon(Icons.help_outline),
-        label: const Text('チートシート'),
-        backgroundColor: Colors.white24,
-        foregroundColor: Colors.white,
-      ),
+      floatingActionButton: _isCheatSheetPinned
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: _showCheatSheet,
+              icon: const Icon(Icons.help_outline),
+              label: const Text('チートシート'),
+              backgroundColor: Colors.white24,
+              foregroundColor: Colors.white,
+            ),
     );
   }
 
@@ -252,7 +314,7 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
                   const Text('常時表示', style: TextStyle(color: Colors.white70)),
                   Switch(
                     value: _isCheatSheetPinned,
-                    activeColor: Colors.amber,
+                    activeThumbColor: Colors.amber,
                     onChanged: (val) {
                       setState(() {
                         _isCheatSheetPinned = val;
@@ -275,25 +337,113 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildCheatSheetSection('基本回転 (外側)', [
-                  'U', 'F', 'R', 'D', 'B', 'L',
-                  "U'", "F'", "R'", "D'", "B'", "L'",
-                  'U2', 'F2', 'R2', 'D2', 'B2', 'L2',
+                  'U',
+                  'F',
+                  'R',
+                  'D',
+                  'B',
+                  'L',
+                  "U'",
+                  "F'",
+                  "R'",
+                  "D'",
+                  "B'",
+                  "L'",
+                  'U2',
+                  'F2',
+                  'R2',
+                  'D2',
+                  'B2',
+                  'L2',
                 ]),
                 _buildCheatSheetSection('2層回し (ワイド)', [
-                  'u', 'f', 'r', 'd', 'b', 'l',
+                  'u',
+                  'f',
+                  'r',
+                  'd',
+                  'b',
+                  'l',
                 ]),
                 _buildCheatSheetSection('中間スライス', [
-                  'M', "M'", 'E', "E'", 'S', "S'",
+                  'M',
+                  "M'",
+                  'E',
+                  "E'",
+                  'S',
+                  "S'",
                 ]),
                 _buildCheatSheetSection('持ち替え (全体回転)', [
-                  'x', "x'", 'y', "y'", 'z', "z'",
+                  'x',
+                  "x'",
+                  'y',
+                  "y'",
+                  'z',
+                  "z'",
                 ]),
                 _buildCheatSheetSection('定石アルゴリズム', [
-                  'sexy', "sexy'", 'sune', 'antisune',
+                  'sexy',
+                  "sexy'",
+                  'sune',
+                  'antisune',
                 ]),
               ],
             ),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSequenceDisplay() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (_sequenceLabel != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              _sequenceLabel!,
+              style: const TextStyle(
+                color: Colors.purpleAccent,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        Wrap(
+          spacing: 8,
+          children: List.generate(_currentSequence.length, (index) {
+            final isActive = index == _sequenceIndex;
+            final isDone = index < _sequenceIndex;
+
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? Colors.purpleAccent
+                    : (isDone ? Colors.white12 : Colors.white24),
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: isActive
+                    ? [
+                        const BoxShadow(
+                          color: Colors.purpleAccent,
+                          blurRadius: 10,
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Text(
+                _currentSequence[index],
+                style: TextStyle(
+                  color: isActive
+                      ? Colors.white
+                      : (isDone ? Colors.white38 : Colors.white),
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            );
+          }),
         ),
       ],
     );
@@ -318,7 +468,7 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
                 label: Text(
                   move,
                   style: const TextStyle(
-                    fontSize: 18, 
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -344,7 +494,7 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
     _moveQueue.clear();
     _isAnimating = false;
     _currentMove = null;
-    
+
     showDialog<void>(
       context: context,
       barrierDismissible: false,

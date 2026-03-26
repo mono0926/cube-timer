@@ -61,4 +61,58 @@ void main() {
     final scrambled = solved.applyScramble('R');
     expect(scrambled.isSolved, isFalse);
   });
+
+  group('Wide and Slice moves', () {
+    test('y move 4 times returns to solved', () {
+      final state = CubeState.solved().applyScramble('y y y y');
+      expect(state.isSolved, isTrue);
+    });
+
+    test('u move 4 times returns to solved', () {
+      final state = CubeState.solved().applyScramble('u u u u');
+      expect(state.isSolved, isTrue);
+    });
+
+    test('y move rotates side faces correctly', () {
+      // After y, F becomes L, L becomes B, B becomes R, R becomes F
+      // Solved colors: F: blue, R: red, B: green, L: orange
+      // Standard: F gets R, R gets B, B gets L, L gets F
+      final state = CubeState.solved().applyScramble('y');
+
+      // F (9-17) should be red (R's center color)
+      expect(state.stickers[9 + 4], CubeColor.red);
+      // R (18-26) should be green (B's center color)
+      expect(state.stickers[18 + 4], CubeColor.green);
+      // B (36-44) should be orange (L's center color)
+      expect(state.stickers[36 + 4], CubeColor.orange);
+      // L (45-53) should be blue (F's center color)
+      expect(state.stickers[45 + 4], CubeColor.blue);
+    });
+
+    test('Successive y moves don\'t corrupt colors', () {
+      var state = CubeState.solved();
+      for (var i = 0; i < 100; i++) {
+        state = state.applyScramble('y');
+        // Side centers should always be one of the side colors
+        final sideColors = {
+          state.stickers[9 + 4],
+          state.stickers[18 + 4],
+          state.stickers[36 + 4],
+          state.stickers[45 + 4]
+        };
+        // Should always have 4 distinct colors across the 4 sides
+        expect(sideColors.length, 4);
+      }
+    });
+
+    test('M move correctly affects middle column', () {
+      // M is like L, so it moves U center to F center
+      final initial = CubeState.solved();
+      final afterM = initial.applyScramble('M');
+
+      expect(afterM.stickers[9 + 4], CubeColor.yellow); // F center gets U center
+      expect(afterM.stickers[27 + 4], CubeColor.blue);   // D center gets F center
+      expect(afterM.stickers[40], CubeColor.white);     // B center gets D center
+    });
+  });
 }
