@@ -106,13 +106,6 @@ class ScramblePage extends HookWidget {
                         ),
                         child: Column(
                           children: [
-                            const Text(
-                              'タップして2D/3D切替',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
-                              ),
-                            ),
                             Expanded(
                               child: ScrambleVisualizer(
                                 cubeState: cubeState,
@@ -168,11 +161,6 @@ class ScramblePage extends HookWidget {
                           ],
                         ),
                       ),
-                    ),
-
-                    const Text(
-                      'タップして2D/3Dを切り替え',
-                      style: TextStyle(color: Colors.white70, fontSize: 13),
                     ),
 
                     // Visualizer space
