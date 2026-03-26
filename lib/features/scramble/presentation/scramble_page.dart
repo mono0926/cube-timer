@@ -12,16 +12,129 @@ class ScramblePage extends HookWidget {
   Widget build(BuildContext context) {
     final scramble = useState(ScrambleGenerator.generate());
     final is3D = useState(true);
-    final cubeState = useMemoized(() {
-      return CubeState.solved().applyScramble(scramble.value);
-    }, [scramble.value]);
+
+    // Animation states
+    final isPlaying = useState(false);
+    final currentMoveIndex = useState(-1);
+
+    final moves = useMemoized(
+      () => scramble.value
+          .split(RegExp(r'\s+'))
+          .where((s) => s.isNotEmpty)
+          .toList(),
+      [scramble.value],
+    );
+
+    final animationController = useAnimationController(
+      duration: const Duration(milliseconds: 350),
+    );
+
+    // To trigger rebuilds for the pulse effect
+    final pulseController = useAnimationController(
+      duration: const Duration(milliseconds: 800),
+    )..repeat();
+    
+    final isPreparing = useState(false);
+
+    final animation = useMemoized(
+      () => CurvedAnimation(
+        parent: animationController,
+        curve: Curves.easeInOut,
+      ),
+      [animationController],
+    );
+
+    // Initial solved cube
+    final solvedState = useMemoized(CubeState.solved, []);
+
+    // Current state being displayed
+    final displayCubeState = useMemoized(() {
+      if (!isPlaying.value) {
+        return solvedState.applyScramble(scramble.value);
+      }
+      if (currentMoveIndex.value < 0) {
+        return solvedState;
+      }
+      var state = solvedState;
+      // When animating, we display the cube state up to the move BEFORE the currently animating one
+      for (var i = 0; i < currentMoveIndex.value; i++) {
+        state = state.applyScramble(moves[i]);
+      }
+      return state;
+    }, [scramble.value, isPlaying.value, currentMoveIndex.value]);
+
+    final animatingMove =
+        (isPlaying.value &&
+            currentMoveIndex.value >= 0 &&
+            currentMoveIndex.value < moves.length)
+        ? moves[currentMoveIndex.value]
+        : null;
+
+    final animationStatusListener = useCallback((AnimationStatus status) {
+      if (status == AnimationStatus.completed) {
+        if (currentMoveIndex.value < moves.length - 1) {
+          currentMoveIndex.value++;
+          animationController.forward(from: 0);
+        } else {
+          // Finished all moves
+          isPlaying.value = false;
+          currentMoveIndex.value = -1;
+        }
+      }
+    }, [moves]);
+
+    useEffect(() {
+      animationController.addStatusListener(animationStatusListener);
+      return () =>
+          animationController.removeStatusListener(animationStatusListener);
+    }, [animationStatusListener]);
 
     final theme = Theme.of(context);
-
     final orientation = MediaQuery.orientationOf(context);
     final isLandscape = orientation == Orientation.landscape;
 
-    // Apply the very same radial gradient aesthetic as the timer page
+    Future<void> startPlayback() async {
+      if (isPreparing.value) return;
+      
+      isPreparing.value = true;
+      currentMoveIndex.value = -1; // Specific state to show solved cube during preparation
+      
+      await Future<void>.delayed(const Duration(milliseconds: 800));
+      
+      if (!isPlaying.value) return; // In case it was stopped during delay
+      
+      isPreparing.value = false;
+      currentMoveIndex.value = 0;
+      animationController.forward(from: 0);
+    }
+
+    void stopPlayback() {
+      isPlaying.value = false;
+      isPreparing.value = false;
+      currentMoveIndex.value = -1;
+      animationController.stop();
+    }
+
+    Widget buildPlayButton({double size = 40}) {
+      return IconButton(
+        iconSize: size,
+        icon: Icon(
+          (isPlaying.value || isPreparing.value)
+              ? Icons.stop_circle_outlined
+              : Icons.play_circle_outline,
+        ),
+        color: Colors.white,
+        onPressed: () {
+          if (isPlaying.value || isPreparing.value) {
+            stopPlayback();
+          } else {
+            isPlaying.value = true;
+            startPlayback();
+          }
+        },
+      );
+    }
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -47,73 +160,94 @@ class ScramblePage extends HookWidget {
           child: isLandscape
               ? Row(
                   children: [
-                    // Left Side: Scramble Text & Refresh
+                    // Left side: Scramble info and controls
                     Expanded(
-                      flex: 2,
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
+                      flex: 4,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  height: 60,
+                                  width: 60,
+                                  child: ScrambleVisualizer(
+                                    cubeState: solvedState,
+                                    interactive: false,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: AnimatedDefaultTextStyle(
+                                    duration: const Duration(milliseconds: 300),
+                                    style: theme.textTheme.titleLarge!.copyWith(
+                                      color: Colors.white,
+                                      shadows: [
+                                        const BoxShadow(
+                                          color: Colors.purpleAccent,
+                                          blurRadius: 10,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      scramble.value,
+                                      textAlign: TextAlign.left,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 48),
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // Small indicator for initial solved state
-                              SizedBox(
-                                height: 60,
-                                width: 60,
-                                child: ScrambleVisualizer(
-                                  cubeState: CubeState.solved(),
-                                  interactive: false,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              AnimatedDefaultTextStyle(
-                                duration: const Duration(milliseconds: 300),
-                                style: theme.textTheme.titleLarge!.copyWith(
-                                  color: Colors.white,
-                                  shadows: [
-                                    const BoxShadow(
-                                      color: Colors.purpleAccent,
-                                      blurRadius: 10,
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  scramble.value,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
+                              buildPlayButton(size: 48),
+                              const SizedBox(width: 24),
                               IconButton(
-                                iconSize: 40,
+                                iconSize: 48,
                                 icon: const Icon(Icons.refresh),
                                 color: Colors.white,
                                 onPressed: () {
+                                  stopPlayback();
                                   scramble.value = ScrambleGenerator.generate();
                                 },
                               ),
                             ],
                           ),
-                        ),
+                        ],
                       ),
                     ),
-                    // Right Side: Visualizer
+                    // Right side: Main Visualizer
                     Expanded(
-                      flex: 3,
+                      flex: 6,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 32,
-                        ),
-                        child: Column(
-                          children: [
-                            Expanded(
+                        padding: const EdgeInsets.all(32),
+                        child: AnimatedBuilder(
+                          animation: Listenable.merge([animationController, pulseController]),
+                          builder: (context, _) {
+                            // Pulse effect during preparation
+                            double scale = 1.0;
+                            if (isPreparing.value) {
+                              // Use pulseController value for a smooth sine-like pulse
+                              final curve = Curves.easeInOut.transform(pulseController.value);
+                              scale = 1.0 + 0.05 * (1.0 - (curve - 0.5).abs() * 2);
+                            }
+
+                            return Transform.scale(
+                              scale: scale,
                               child: ScrambleVisualizer(
-                                cubeState: cubeState,
+                                cubeState: displayCubeState,
                                 is3D: is3D.value,
                                 onToggle: () => is3D.value = !is3D.value,
+                                animatingMove: animatingMove,
+                                animationProgress: animation.value,
                               ),
-                            ),
-                          ],
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -132,12 +266,11 @@ class ScramblePage extends HookWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Small indicator for initial solved state
                             SizedBox(
                               height: 75,
                               width: 75,
                               child: ScrambleVisualizer(
-                                cubeState: CubeState.solved(),
+                                cubeState: solvedState,
                                 interactive: false,
                               ),
                             ),
@@ -167,24 +300,49 @@ class ScramblePage extends HookWidget {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.all(32),
-                        child: ScrambleVisualizer(
-                          cubeState: cubeState,
-                          is3D: is3D.value,
-                          onToggle: () => is3D.value = !is3D.value,
+                        child: AnimatedBuilder(
+                          animation: Listenable.merge([animationController, pulseController]),
+                          builder: (context, _) {
+                            // Pulse effect during preparation
+                            double scale = 1.0;
+                            if (isPreparing.value) {
+                              final curve = Curves.easeInOut.transform(pulseController.value);
+                              scale = 1.0 + 0.05 * (1.0 - (curve - 0.5).abs() * 2);
+                            }
+
+                            return Transform.scale(
+                              scale: scale,
+                              child: ScrambleVisualizer(
+                                cubeState: displayCubeState,
+                                is3D: is3D.value,
+                                onToggle: () => is3D.value = !is3D.value,
+                                animatingMove: animatingMove,
+                                animationProgress: animation.value,
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
 
-                    // Refresh Button
+                    // Controls
                     Padding(
                       padding: const EdgeInsets.only(bottom: 40),
-                      child: IconButton(
-                        iconSize: 48,
-                        icon: const Icon(Icons.refresh),
-                        color: Colors.white,
-                        onPressed: () {
-                          scramble.value = ScrambleGenerator.generate();
-                        },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          buildPlayButton(size: 48),
+                          const SizedBox(width: 24),
+                          IconButton(
+                            iconSize: 48,
+                            icon: const Icon(Icons.refresh),
+                            color: Colors.white,
+                            onPressed: () {
+                              stopPlayback();
+                              scramble.value = ScrambleGenerator.generate();
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   ],
