@@ -243,47 +243,25 @@ class ScrambleVisualizerState extends State<ScrambleVisualizer>
       return move;
     }
 
-    // Handle algorithms
+    // Handle macro algorithms
     final lowerMove = move.toLowerCase();
-    if (lowerMove == 'sexy') {
-      return [
-        resolveLogicalMove('R'),
-        resolveLogicalMove('U'),
-        resolveLogicalMove('R\''),
-        resolveLogicalMove('U\''),
-      ].join(' ');
+    final Map<String, List<String>> macros = {
+      'sexy': ['R', 'U', "R'", "U'"],
+      "sexy'": ['U', 'R', "U'", "R'"],
+      'invsexy': ['U', 'R', "U'", "R'"],
+      'unsexy': ['U', 'R', "U'", "R'"],
+      'sune': ['R', 'U', "R'", 'U', 'R', 'U2', "R'"],
+      'antisune': ['R', 'U2', "R'", "U'", 'R', "U'", "R'"],
+    };
+
+    if (macros.containsKey(lowerMove)) {
+      return macros[lowerMove]!
+          .map((m) => resolveLogicalMove(m, map: map))
+          .join(' ');
     }
-    if (lowerMove == 'sexy\'' ||
-        lowerMove == 'invsexy' ||
-        lowerMove == 'unsexy') {
-      return [
-        resolveLogicalMove('U'),
-        resolveLogicalMove('R'),
-        resolveLogicalMove('U\''),
-        resolveLogicalMove('R\''),
-      ].join(' ');
-    }
-    if (lowerMove == 'sune') {
-      return [
-        resolveLogicalMove('R'),
-        resolveLogicalMove('U'),
-        resolveLogicalMove('R\''),
-        resolveLogicalMove('U'),
-        resolveLogicalMove('R'),
-        resolveLogicalMove('U2'),
-        resolveLogicalMove('R\''),
-      ].join(' ');
-    }
-    if (lowerMove == 'antisune') {
-      return [
-        resolveLogicalMove('R'),
-        resolveLogicalMove('U2'),
-        resolveLogicalMove('R\''),
-        resolveLogicalMove('U\''),
-        resolveLogicalMove('R'),
-        resolveLogicalMove('U\''),
-        resolveLogicalMove('R\''),
-      ].join(' ');
+
+    if (!map) {
+      return move;
     }
     final mainChar = move[0];
     final upperChar = mainChar.toUpperCase();

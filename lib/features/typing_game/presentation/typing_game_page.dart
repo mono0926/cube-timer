@@ -105,29 +105,31 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
       setState(() {});
       return;
     }
-    final visualResolved =
-        _visualizerKey.currentState?.resolveLogicalMove(rawTyped, map: false) ??
-        rawTyped;
-    final visualMoves = visualResolved
-        .split(RegExp(r'\s+'))
-        .where((m) => m.isNotEmpty)
-        .toList();
+    final tokens = rawTyped.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
+    
+    for (final token in tokens) {
+      final resolved =
+          _visualizerKey.currentState?.resolveLogicalMove(token, map: false) ??
+          token;
+      
+      final isMacro = resolved != token;
+      final visualMoves = resolved
+          .split(RegExp(r'\s+'))
+          .where((m) => m.isNotEmpty)
+          .toList();
 
-    if (rawTyped != visualResolved) {
-      // It's a command
-      _currentSequence = visualMoves;
-      _sequenceIndex = 0;
-      _sequenceLabel = rawTyped;
-    } else {
-      _currentSequence = [];
-      _sequenceIndex = -1;
-      _sequenceLabel = null;
-    }
+      if (isMacro) {
+        // Start of a macro sequence
+        _currentSequence = visualMoves;
+        _sequenceIndex = 0;
+        _sequenceLabel = token;
+      }
 
-    for (final vm in visualMoves) {
-      final logicalMove =
-          _visualizerKey.currentState?.resolveLogicalMove(vm) ?? vm;
-      _moveQueue.add((visual: vm, logical: logicalMove));
+      for (final vm in visualMoves) {
+        final logicalMove =
+            _visualizerKey.currentState?.resolveLogicalMove(vm) ?? vm;
+        _moveQueue.add((visual: vm, logical: logicalMove));
+      }
     }
     _textController.clear();
 
