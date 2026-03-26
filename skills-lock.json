@@ -1,0 +1,24 @@
+{
+  "version": 3,
+  "skills": {
+    "3d-visualizer": {
+      "source": "daffy0208/ai-dev-standards",
+      "sourceType": "github",
+      "computedHash": "b40dd41e60b3d96671deecfc1695e9f30dfce5c7d5c1622d0366a04fecfcd2f1",
+      "skillFolderHash": "961c1a7b5abe77ebc8dd4ef3f3ceabe6bc3715aa"
+    },
+    "blockbench-modeling": {
+      "source": "jasonjgardner/blockbench-mcp-project",
+      "sourceType": "github",
+      "computedHash": "a919fb8ab4ed4837cc97e5d9a4bf3bfe9b1def89d1807410e5fa080051c2075d",
+      "skillFolderHash": "e9703403d51b098efdecf2d4c15b81e3f99ae34e"
+    },
+    "puzzle-design": {
+      "source": "omer-metin/skills-for-antigravity",
+      "sourceType": "github",
+      "computedHash": "9b2e1957a94ff3f515fe89451872206bef37adc0ba5e7049d1c9b10def054143",
+      "skillFolderHash": "7ebaee9efcc1c705dc5da591ad39cc2bc156b2fa"
+    }
+  },
+  "dismissed": {}
+}
