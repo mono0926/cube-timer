@@ -51,5 +51,14 @@ void main() {
         reason: 'Index $i failed',
       );
     }
+    expect(state.isSolved, isTrue);
+  });
+
+  test('isSolved returns true for solved state and false for scrambled', () {
+    final solved = CubeState.solved();
+    expect(solved.isSolved, isTrue);
+
+    final scrambled = solved.applyScramble('R');
+    expect(scrambled.isSolved, isFalse);
   });
 }

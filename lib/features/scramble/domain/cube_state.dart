@@ -46,6 +46,18 @@ class CubeState {
   /// 54 stickers in order of faces: U, F, R, D, B, L (9 stickers per face)
   final List<CubeColor> stickers;
 
+  bool get isSolved {
+    for (var i = 0; i < 6; i++) {
+      final faceColor = stickers[i * 9 + 4]; // Use center sticker as reference
+      for (var j = 0; j < 9; j++) {
+        if (stickers[i * 9 + j] != faceColor) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   CubeState applyScramble(String algorithm) {
     var state = this;
     final moves = algorithm.split(RegExp(r'\s+'));
@@ -62,38 +74,53 @@ class CubeState {
     if (move.isEmpty) {
       return this;
     }
-    final faceChar = move[0].toUpperCase();
+    final faceChar = move[0];
     final modifier = move.length > 1 ? move.substring(1) : '';
 
-    var rotationCount = 1;
-    if (modifier.contains("'")) {
-      rotationCount = 3; // 逆回転は3回時計回りと同じ
-    } else if (modifier.contains('2')) {
-      rotationCount = 2; // 半回転
-    }
-
-    List<int> mapping;
-    switch (faceChar) {
-      case 'U':
-        mapping = _uMove;
-      case 'D':
-        mapping = _dMove;
-      case 'F':
-        mapping = _fMove;
-      case 'B':
-        mapping = _bMove;
-      case 'R':
-        mapping = _rMove;
-      case 'L':
-        mapping = _lMove;
-      default:
-        return this; // Unknown move
-    }
-
     var newState = this;
-    for (var i = 0; i < rotationCount; i++) {
-      newState = newState._applyMapping(mapping);
+
+    void applyMapping(List<int> mapping, bool invert) {
+      var count = 1;
+      if (modifier.contains("'")) {
+        count = 3;
+      } else if (modifier.contains('2')) {
+        count = 2;
+      }
+      if (invert) {
+        if (count == 1) {
+          count = 3;
+        } else if (count == 3) {
+          count = 1;
+        }
+      }
+      for (var i = 0; i < count; i++) {
+        newState = newState._applyMapping(mapping);
+      }
     }
+
+    switch (faceChar) {
+      case 'U': applyMapping(_uMove, false); break;
+      case 'D': applyMapping(_dMove, false); break;
+      case 'F': applyMapping(_fMove, false); break;
+      case 'B': applyMapping(_bMove, false); break;
+      case 'R': applyMapping(_rMove, false); break;
+      case 'L': applyMapping(_lMove, false); break;
+      case 'M': applyMapping(_mMove, false); break;
+      case 'E': applyMapping(_eMove, false); break;
+      case 'S': applyMapping(_sMove, false); break;
+      
+      case 'u': applyMapping(_uMove, false); applyMapping(_eMove, true); break;
+      case 'd': applyMapping(_dMove, false); applyMapping(_eMove, false); break;
+      case 'f': applyMapping(_fMove, false); applyMapping(_sMove, false); break;
+      case 'b': applyMapping(_bMove, false); applyMapping(_sMove, true); break;
+      case 'r': applyMapping(_rMove, false); applyMapping(_mMove, true); break;
+      case 'l': applyMapping(_lMove, false); applyMapping(_mMove, false); break;
+      
+      case 'x': applyMapping(_rMove, false); applyMapping(_mMove, true); applyMapping(_lMove, true); break;
+      case 'y': applyMapping(_uMove, false); applyMapping(_eMove, true); applyMapping(_dMove, true); break;
+      case 'z': applyMapping(_fMove, false); applyMapping(_sMove, false); applyMapping(_bMove, true); break;
+    }
+
     return newState;
   }
 
@@ -441,4 +468,8 @@ class CubeState {
     50,
     47,
   ];
+
+  static const _mMove = [0, 43, 2, 3, 40, 5, 6, 37, 8, 9, 1, 11, 12, 4, 14, 15, 7, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 10, 29, 30, 13, 32, 33, 16, 35, 36, 34, 38, 39, 31, 41, 42, 28, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53];
+  static const _eMove = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 48, 49, 50, 15, 16, 17, 18, 19, 20, 12, 13, 14, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 21, 22, 23, 42, 43, 44, 45, 46, 47, 39, 40, 41, 51, 52, 53];
+  static const _sMove = [0, 1, 2, 52, 49, 46, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 3, 20, 21, 4, 23, 24, 5, 26, 27, 28, 29, 25, 22, 19, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 30, 47, 48, 31, 50, 51, 32, 53];
 }

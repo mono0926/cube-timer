@@ -99,6 +99,11 @@ class _TimerPageState extends ConsumerState<TimerPage> {
         foregroundColor: Colors.white,
         actions: [
           IconButton(
+            icon: const Icon(Icons.keyboard),
+            tooltip: 'タイピングゲーム',
+            onPressed: () => const TypingGameRoute().go(context),
+          ),
+          IconButton(
             icon: const Icon(Icons.shuffle),
             tooltip: 'スクランブル',
             onPressed: () => const ScrambleRoute().go(context),

@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/history/presentation/history_page.dart';
 import '../../features/scramble/presentation/scramble_page.dart';
 import '../../features/timer/presentation/timer_page.dart';
+import '../../features/typing_game/presentation/typing_game_page.dart';
 
 part 'app_router.g.dart';
 
@@ -25,6 +26,9 @@ GoRouter goRouter(Ref ref) {
     ),
     TypedGoRoute<ScrambleRoute>(
       path: 'scramble',
+    ),
+    TypedGoRoute<TypingGameRoute>(
+      path: 'typing_game',
     ),
   ],
 )
@@ -49,4 +53,12 @@ class ScrambleRoute extends GoRouteData with _$ScrambleRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) =>
       const ScramblePage();
+}
+
+class TypingGameRoute extends GoRouteData with _$TypingGameRoute {
+  const TypingGameRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const TypingGamePage();
 }
