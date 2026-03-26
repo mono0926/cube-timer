@@ -41,4 +41,9 @@ class TypingGameState extends _$TypingGameState {
   void reset() {
     state = _generateNewState();
   }
+
+  /// 特殊なデバッグ用コマンド：あと1手（U）で揃う状態にする
+  void setNearlySolved() {
+    state = CubeState.solved().applyScramble("U'");
+  }
 }

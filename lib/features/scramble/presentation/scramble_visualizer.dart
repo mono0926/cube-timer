@@ -240,23 +240,277 @@ class ScrambleVisualizerState extends State<ScrambleVisualizer>
       return move;
     }
 
+    // Handle algorithms
     final lowerMove = move.toLowerCase();
     if (lowerMove == 'sexy') {
-      return "R U R' U'";
+      return [
+        resolveLogicalMove('R'),
+        resolveLogicalMove('U'),
+        resolveLogicalMove('R\''),
+        resolveLogicalMove('U\''),
+      ].join(' ');
     }
     if (lowerMove == 'sexy\'' ||
         lowerMove == 'invsexy' ||
         lowerMove == 'unsexy') {
-      return "U R U' R'";
+      return [
+        resolveLogicalMove('U'),
+        resolveLogicalMove('R'),
+        resolveLogicalMove('U\''),
+        resolveLogicalMove('R\''),
+      ].join(' ');
     }
     if (lowerMove == 'sune') {
-      return "R U R' U R U2 R'";
+      return [
+        resolveLogicalMove('R'),
+        resolveLogicalMove('U'),
+        resolveLogicalMove('R\''),
+        resolveLogicalMove('U'),
+        resolveLogicalMove('R'),
+        resolveLogicalMove('U2'),
+        resolveLogicalMove('R\''),
+      ].join(' ');
     }
     if (lowerMove == 'antisune') {
-      return "R U2 R' U' R U' R'";
+      return [
+        resolveLogicalMove('R'),
+        resolveLogicalMove('U2'),
+        resolveLogicalMove('R\''),
+        resolveLogicalMove('U\''),
+        resolveLogicalMove('R'),
+        resolveLogicalMove('U\''),
+        resolveLogicalMove('R\''),
+      ].join(' ');
+    }
+    final mainChar = move[0];
+    final upperChar = mainChar.toUpperCase();
+    final validChars = [
+      'U',
+      'D',
+      'F',
+      'B',
+      'R',
+      'L',
+      'M',
+      'E',
+      'S',
+      'X',
+      'Y',
+      'Z',
+    ];
+    if (!validChars.contains(upperChar)) {
+      return move;
+    }
+
+    final vm = _getViewMapping();
+
+    if (['U', 'D', 'F', 'B', 'R', 'L'].contains(upperChar)) {
+      Face mappedFace;
+      switch (upperChar) {
+        case 'U':
+          mappedFace = vm[Face.u]!;
+        case 'D':
+          mappedFace = vm[Face.d]!;
+        case 'F':
+          mappedFace = vm[Face.f]!;
+        case 'B':
+          mappedFace = vm[Face.b]!;
+        case 'R':
+          mappedFace = vm[Face.r]!;
+        case 'L':
+          mappedFace = vm[Face.l]!;
+        default:
+          mappedFace = Face.f;
+      }
+
+      var mappedFaceChar = mappedFace.name.toUpperCase();
+
+      if (mainChar.toLowerCase() == mainChar) {
+        mappedFaceChar = mappedFaceChar.toLowerCase();
+      }
+
+      if (move.length > 1 && move[1] == 'w') {
+        mappedFaceChar = '${mappedFaceChar.toLowerCase()}w';
+        return mappedFaceChar + move.substring(2);
+      }
+
+      if (move.length > 1) {
+        return mappedFaceChar + move.substring(1);
+      }
+      return mappedFaceChar;
+    }
+
+    if (['M', 'E', 'S'].contains(upperChar)) {
+      String mappedChar;
+      var isPrimed = false;
+      Face targetFace;
+      if (upperChar == 'M') {
+        targetFace = vm[Face.l]!;
+      } else if (upperChar == 'E') {
+        targetFace = vm[Face.d]!;
+      } else {
+        targetFace = vm[Face.f]!;
+      }
+
+      switch (targetFace) {
+        case Face.u:
+          mappedChar = 'E';
+          isPrimed = true;
+        case Face.d:
+          mappedChar = 'E';
+          isPrimed = false;
+        case Face.f:
+          mappedChar = 'S';
+          isPrimed = false;
+        case Face.b:
+          mappedChar = 'S';
+          isPrimed = true;
+        case Face.r:
+          mappedChar = 'M';
+          isPrimed = true;
+        case Face.l:
+          mappedChar = 'M';
+          isPrimed = false;
+      }
+      final modifier = move.length > 1 ? move.substring(1) : '';
+      return _combineModifiers(mappedChar, isPrimed, modifier);
+    }
+
+    if (['X', 'Y', 'Z'].contains(upperChar)) {
+      String mappedChar;
+      var isPrimed = false;
+      Face targetFace;
+      if (upperChar == 'X') {
+        targetFace = vm[Face.r]!;
+      } else if (upperChar == 'Y') {
+        targetFace = vm[Face.u]!;
+      } else {
+        targetFace = vm[Face.f]!;
+      }
+
+      switch (targetFace) {
+        case Face.u:
+          mappedChar = 'Y';
+          isPrimed = false;
+        case Face.d:
+          mappedChar = 'Y';
+          isPrimed = true;
+        case Face.f:
+          mappedChar = 'Z';
+          isPrimed = false;
+        case Face.b:
+          mappedChar = 'Z';
+          isPrimed = true;
+        case Face.r:
+          mappedChar = 'X';
+          isPrimed = false;
+        case Face.l:
+          mappedChar = 'X';
+          isPrimed = true;
+      }
+      final modifier = move.length > 1 ? move.substring(1) : '';
+      return _combineModifiers(mappedChar, isPrimed, modifier);
     }
 
     return move;
+  }
+
+  Map<Face, Face> _getViewMapping() {
+    const frontBias = _Vector3(-0.1, 0.1, 1);
+    var bestFront = Face.f;
+    var maxFrontDot = -2.0;
+
+    for (final faceDef in _FaceDef.faces) {
+      final wNorm = _transform.transform(faceDef.normal);
+      if (wNorm.z < -0.1) {
+        continue;
+      }
+      final dot =
+          wNorm.x * frontBias.x + wNorm.y * frontBias.y + wNorm.z * frontBias.z;
+      if (dot > maxFrontDot) {
+        maxFrontDot = dot;
+        bestFront = faceDef.face;
+      }
+    }
+
+    const upBias = _Vector3(0, -1, -0.1);
+    var bestUp = Face.u;
+    var maxUpDot = -2.0;
+
+    final frontLogicalNormal = _FaceDef.faces
+        .firstWhere((e) => e.face == bestFront)
+        .normal;
+
+    for (final faceDef in _FaceDef.faces) {
+      if (faceDef.face == bestFront ||
+          faceDef.normal.dot(frontLogicalNormal).abs() > 0.5) {
+        continue;
+      }
+      final wNorm = _transform.transform(faceDef.normal);
+      final dot = wNorm.x * upBias.x + wNorm.y * upBias.y + wNorm.z * upBias.z;
+      if (dot > maxUpDot) {
+        maxUpDot = dot;
+        bestUp = faceDef.face;
+      }
+    }
+
+    final upLogicalNormal = _FaceDef.faces
+        .firstWhere((e) => e.face == bestUp)
+        .normal;
+    final rightNormal = frontLogicalNormal.cross(upLogicalNormal);
+
+    var bestRight = Face.r;
+    for (final faceDef in _FaceDef.faces) {
+      if (faceDef.normal.dot(rightNormal) > 0.9) {
+        bestRight = faceDef.face;
+      }
+    }
+
+    Face getOpposite(Face f) {
+      switch (f) {
+        case Face.u:
+          return Face.d;
+        case Face.d:
+          return Face.u;
+        case Face.f:
+          return Face.b;
+        case Face.b:
+          return Face.f;
+        case Face.r:
+          return Face.l;
+        case Face.l:
+          return Face.r;
+      }
+    }
+
+    return {
+      Face.f: bestFront,
+      Face.b: getOpposite(bestFront),
+      Face.u: bestUp,
+      Face.d: getOpposite(bestUp),
+      Face.r: bestRight,
+      Face.l: getOpposite(bestRight),
+    };
+  }
+
+  String _combineModifiers(
+    String baseChar,
+    bool isPrimedBase,
+    String modifier,
+  ) {
+    final hasDouble = modifier.contains('2');
+    final hasPrime = modifier.contains("'");
+
+    if (hasDouble) {
+      return '${baseChar}2';
+    }
+
+    // The final polarity is XOR of isPrimedBase and hasPrime
+    final finalPrime = isPrimedBase != hasPrime;
+    if (finalPrime) {
+      return "$baseChar'";
+    }
+    return baseChar;
   }
 }
 

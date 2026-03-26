@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -87,6 +90,20 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
     }
 
     final rawTyped = value.trim();
+
+    if (rawTyped.toLowerCase() == 'last') {
+      _moveQueue.clear();
+      _isAnimating = false;
+      _currentMove = null;
+      _currentSequence = [];
+      _sequenceIndex = -1;
+      _sequenceLabel = null;
+      ref.read(typingGameStateProvider.notifier).setNearlySolved();
+      _textController.clear();
+      _focusNode.requestFocus();
+      setState(() {});
+      return;
+    }
     final resolved =
         _visualizerKey.currentState?.resolveLogicalMove(rawTyped) ?? rawTyped;
     final moves = resolved
@@ -193,7 +210,7 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
     setState(() {});
 
     _confettiController.play();
-    HapticFeedback.heavyImpact();
+    unawaited(HapticFeedback.heavyImpact());
 
     await _celebrationController.forward(from: 0);
     await Future<void>.delayed(const Duration(milliseconds: 500));
@@ -242,7 +259,8 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
                         _celebrationController,
                       ]),
                       builder: (context, child) {
-                        final victoryRotation = _celebrationAnimation.value *
+                        final victoryRotation =
+                            _celebrationAnimation.value *
                             2 *
                             3.14159; // 2 full rotations
                         return Transform(
@@ -310,6 +328,22 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
                 else
                   const SizedBox(height: 32),
               ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              colors: const [
+                Colors.green,
+                Colors.blue,
+                Colors.pink,
+                Colors.orange,
+                Colors.purple,
+                Colors.yellow,
+              ],
+              createParticlePath: _drawStar,
             ),
           ),
         ],

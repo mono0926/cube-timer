@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timer/features/scramble/domain/cube_state.dart';
+import 'package:timer/features/scramble/presentation/scramble_visualizer.dart';
 import 'package:timer/features/typing_game/domain/typing_game_state.dart';
 import 'package:timer/features/typing_game/presentation/typing_game_page.dart';
-
-import 'package:timer/features/scramble/presentation/scramble_visualizer.dart';
 
 // --- Fake TypingGame State ---
 class FakeTypingGameState extends TypingGameState {
