@@ -270,6 +270,47 @@ class ScrambleVisualizerState extends State<ScrambleVisualizer>
 
   String resolveLogicalMove(String move) {
     if (move.isEmpty) return move;
+
+    // Handle algorithms
+    final lowerMove = move.toLowerCase();
+    if (lowerMove == 'sexy') {
+      return [
+        resolveLogicalMove('R'),
+        resolveLogicalMove('U'),
+        resolveLogicalMove('R\''),
+        resolveLogicalMove('U\''),
+      ].join(' ');
+    }
+    if (lowerMove == 'sexy\'' || lowerMove == 'invsexy' || lowerMove == 'unsexy') {
+      return [
+        resolveLogicalMove('U'),
+        resolveLogicalMove('R'),
+        resolveLogicalMove('U\''),
+        resolveLogicalMove('R\''),
+      ].join(' ');
+    }
+    if (lowerMove == 'sune') {
+      return [
+        resolveLogicalMove('R'),
+        resolveLogicalMove('U'),
+        resolveLogicalMove('R\''),
+        resolveLogicalMove('U'),
+        resolveLogicalMove('R'),
+        resolveLogicalMove('U2'),
+        resolveLogicalMove('R\''),
+      ].join(' ');
+    }
+    if (lowerMove == 'antisune') {
+      return [
+        resolveLogicalMove('R'),
+        resolveLogicalMove('U2'),
+        resolveLogicalMove('R\''),
+        resolveLogicalMove('U\''),
+        resolveLogicalMove('R'),
+        resolveLogicalMove('U\''),
+        resolveLogicalMove('R\''),
+      ].join(' ');
+    }
     final mainChar = move[0];
     final upperChar = mainChar.toUpperCase();
     final validChars = ['U', 'D', 'F', 'B', 'R', 'L', 'M', 'E', 'S', 'X', 'Y', 'Z'];

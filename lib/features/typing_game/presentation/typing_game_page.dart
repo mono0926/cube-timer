@@ -54,11 +54,12 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
       return;
     }
 
-    final moves = value.trim().split(RegExp(r'\s+'));
+    final rawTyped = value.trim();
+    final resolved = _visualizerKey.currentState?.resolveLogicalMove(rawTyped) ?? rawTyped;
+    final moves = resolved.split(RegExp(r'\s+'));
     for (final m in moves) {
       if (m.isNotEmpty) {
-        final mappedMove = _visualizerKey.currentState?.resolveLogicalMove(m) ?? m;
-        _moveQueue.add(mappedMove);
+        _moveQueue.add(m);
       }
     }
     _textController.clear();
@@ -155,34 +156,36 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
                   ),
                 ),
                 if (!_isCheatSheetPinned) 
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: TextField(
-                      controller: _textController,
-                      focusNode: _focusNode,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        letterSpacing: 2,
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 400),
+                      child: TextField(
+                        controller: _textController,
+                        focusNode: _focusNode,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          letterSpacing: 2,
+                        ),
+                        textCapitalization: TextCapitalization.characters,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white10,
+                          hintText: '例: R U F\'',
+                          hintStyle: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.3),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 20,
+                          ),
+                        ),
+                        onSubmitted: _onSubmitted,
                       ),
-                      textCapitalization: TextCapitalization.characters,
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.white10,
-                        hintText: '例: R U F\'',
-                        hintStyle: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.3),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 20,
-                        ),
-                      ),
-                      onSubmitted: _onSubmitted,
                     ),
                   ),
                 if (_isCheatSheetPinned)
@@ -254,10 +257,9 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
                       setState(() {
                         _isCheatSheetPinned = val;
                       });
-                      // If we are in the bottom sheet and toggled ON, 
-                      // we just stay in pinned mode behind/instead.
-                      // If toggled OFF from the PINNED view (isPinned=true),
-                      // it will naturally go back to normal view with FAB.
+                      if (!isPinned && val) {
+                        Navigator.of(context).pop();
+                      }
                     },
                   ),
                 ],
@@ -285,6 +287,9 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
                 ]),
                 _buildCheatSheetSection('持ち替え (全体回転)', [
                   'x', "x'", 'y', "y'", 'z', "z'",
+                ]),
+                _buildCheatSheetSection('定石アルゴリズム', [
+                  'sexy', "sexy'", 'sune', 'antisune',
                 ]),
               ],
             ),
