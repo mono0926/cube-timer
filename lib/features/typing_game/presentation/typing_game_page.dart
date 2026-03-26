@@ -17,7 +17,7 @@ class TypingGamePage extends ConsumerStatefulWidget {
 }
 
 class _TypingGamePageState extends ConsumerState<TypingGamePage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final _textController = TextEditingController();
   final _focusNode = FocusNode();
   final GlobalKey<ScrambleVisualizerState> _visualizerKey = GlobalKey();
@@ -28,9 +28,10 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
   late Animation<double> _celebrationAnimation;
   late ConfettiController _confettiController;
 
-  final List<String> _moveQueue = [];
+  final List<({String visual, String logical})> _moveQueue = [];
   bool _isAnimating = false;
-  String? _currentMove;
+  String? _currentMove; // logical
+  String? _currentVisualMove; // visual
   bool _isCheatSheetPinned = false;
 
   // Track the current sequence for commands or multi-move inputs
@@ -104,16 +105,17 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
       setState(() {});
       return;
     }
-    final resolved =
-        _visualizerKey.currentState?.resolveLogicalMove(rawTyped) ?? rawTyped;
-    final moves = resolved
+    final visualResolved =
+        _visualizerKey.currentState?.resolveLogicalMove(rawTyped, map: false) ??
+        rawTyped;
+    final visualMoves = visualResolved
         .split(RegExp(r'\s+'))
         .where((m) => m.isNotEmpty)
         .toList();
 
-    if (rawTyped != resolved) {
+    if (rawTyped != visualResolved) {
       // It's a command
-      _currentSequence = moves;
+      _currentSequence = visualMoves;
       _sequenceIndex = 0;
       _sequenceLabel = rawTyped;
     } else {
@@ -122,7 +124,11 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
       _sequenceLabel = null;
     }
 
-    _moveQueue.addAll(moves);
+    for (final vm in visualMoves) {
+      final logicalMove =
+          _visualizerKey.currentState?.resolveLogicalMove(vm) ?? vm;
+      _moveQueue.add((visual: vm, logical: logicalMove));
+    }
     _textController.clear();
 
     if (!_isAnimating) {
@@ -135,6 +141,7 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
     if (_moveQueue.isEmpty) {
       _isAnimating = false;
       _currentMove = null;
+      _currentVisualMove = null;
       _currentSequence = [];
       _sequenceIndex = -1;
       _sequenceLabel = null;
@@ -148,7 +155,9 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
     }
 
     _isAnimating = true;
-    _currentMove = _moveQueue.removeAt(0);
+    final next = _moveQueue.removeAt(0);
+    _currentMove = next.logical;
+    _currentVisualMove = next.visual;
 
     if (_currentSequence.isNotEmpty) {
       _sequenceIndex = _currentSequence.length - _moveQueue.length - 1;
@@ -207,6 +216,7 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
   Future<void> _startCelebration() async {
     _isAnimating = false;
     _currentMove = null;
+    _currentVisualMove = null;
     setState(() {});
 
     _confettiController.play();
@@ -259,22 +269,21 @@ class _TypingGamePageState extends ConsumerState<TypingGamePage>
                         _celebrationController,
                       ]),
                       builder: (context, child) {
-                        final victoryRotation =
-                            _celebrationAnimation.value *
-                            2 *
-                            3.14159; // 2 full rotations
+                        final victoryRotation = _celebrationAnimation.value * 2 * pi;
                         return Transform(
                           alignment: Alignment.center,
                           transform: Matrix4.identity()
-                            ..rotateX(victoryRotation)
+                            ..rotateX(victoryRotation * 2)
                             ..rotateY(victoryRotation)
-                            ..rotateZ(victoryRotation * 0.5),
-                          child: ScrambleVisualizer(
-                            key: _visualizerKey,
-                            cubeState: state,
-                            animatingMove: _isAnimating ? _currentMove : null,
-                            animationProgress: _curvedAnimation.value,
-                          ),
+                            ..rotateZ(victoryRotation * 3),
+                            child: ScrambleVisualizer(
+                              key: _visualizerKey,
+                              cubeState: state,
+                              animatingMove: _isAnimating ? _currentMove : null,
+                              displayMove:
+                                  _isAnimating ? _currentVisualMove : null,
+                              animationProgress: _curvedAnimation.value,
+                            ),
                         );
                       },
                     ),

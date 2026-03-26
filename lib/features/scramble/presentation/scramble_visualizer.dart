@@ -14,6 +14,7 @@ class ScrambleVisualizer extends StatefulWidget {
     this.initialIs3D = true,
     this.interactive = true,
     this.animatingMove, // e.g. "R", "U'"
+    this.displayMove, // Literal string to display in overlay
     this.animationProgress = 0.0, // 0.0 to 1.0
   });
 
@@ -24,6 +25,7 @@ class ScrambleVisualizer extends StatefulWidget {
   final bool interactive;
 
   final String? animatingMove;
+  final String? displayMove;
   final double animationProgress;
 
   @override
@@ -118,6 +120,7 @@ class ScrambleVisualizerState extends State<ScrambleVisualizer>
                   is3D: _currentIs3D,
                   transform: _transform,
                   animatingMove: widget.animatingMove,
+                  displayMove: widget.displayMove,
                   animationProgress: widget.animationProgress,
                 ),
               ),
@@ -129,7 +132,7 @@ class ScrambleVisualizerState extends State<ScrambleVisualizer>
           IgnorePointer(
             child: Center(
               child: _MoveOverlay(
-                move: widget.animatingMove!,
+                move: widget.displayMove ?? widget.animatingMove!,
                 progress: widget.animationProgress,
               ),
             ),
@@ -235,7 +238,7 @@ class ScrambleVisualizerState extends State<ScrambleVisualizer>
     _snapController.forward(from: 0);
   }
 
-  String resolveLogicalMove(String move) {
+  String resolveLogicalMove(String move, {bool map = true}) {
     if (move.isEmpty) {
       return move;
     }
@@ -299,6 +302,10 @@ class ScrambleVisualizerState extends State<ScrambleVisualizer>
       'Z',
     ];
     if (!validChars.contains(upperChar)) {
+      return move;
+    }
+
+    if (!map) {
       return move;
     }
 
@@ -601,6 +608,7 @@ class _CubePainter extends CustomPainter {
     required this.is3D,
     required this.transform,
     this.animatingMove,
+    this.displayMove,
     this.animationProgress = 0.0,
   });
 
@@ -608,6 +616,7 @@ class _CubePainter extends CustomPainter {
   final bool is3D;
   final _Matrix3 transform;
   final String? animatingMove;
+  final String? displayMove;
   final double animationProgress;
 
   @override
